@@ -5,6 +5,7 @@ import { OrderRequestSchema } from "@0waist/schemas";
 import { errorResponse } from "./errors.js";
 import { listProxyOffers } from "./offers.js";
 import { readPromptHistory } from "./promptHistory.js";
+import { saveAndSeedHedera } from "./setup.js";
 import { PROOFROUTER_TOOLS } from "./tools.js";
 import { executeInferenceOrder } from "./workflow.js";
 
@@ -37,6 +38,16 @@ export function createApp(): Express {
     try {
       const orderRequest = OrderRequestSchema.parse(request.body);
       const result = await executeInferenceOrder(orderRequest);
+      response.json(result);
+    } catch (error) {
+      const { statusCode, body } = errorResponse(error);
+      response.status(statusCode).json(body);
+    }
+  });
+
+  app.post("/api/setup/hedera-seed", async (request, response) => {
+    try {
+      const result = await saveAndSeedHedera(request.body);
       response.json(result);
     } catch (error) {
       const { statusCode, body } = errorResponse(error);

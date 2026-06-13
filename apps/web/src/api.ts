@@ -38,3 +38,43 @@ export async function createOrder(input: {
   }
   return body as OrderResult;
 }
+
+export interface HederaSetupResult {
+  status: "seeded";
+  topic: {
+    topicId: string;
+    transactionId?: string;
+    hashScanUrl?: string;
+  };
+  manifest: {
+    fileId: string;
+    transactionId?: string;
+    hashScanUrl?: string;
+  };
+  audit: {
+    topicId: string;
+    transactionId: string;
+    hashScanUrl: string;
+  };
+  savedEnv: string[];
+}
+
+export async function setupHedera(input: {
+  operatorId: string;
+  operatorKey: string;
+  auditTopicId?: string;
+  marketManifestFileId?: string;
+}): Promise<HederaSetupResult> {
+  const response = await fetch(`${API_BASE_URL}/api/setup/hedera-seed`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input)
+  });
+
+  const body = await response.json();
+  if (!response.ok) {
+    const apiError = body as ApiErrorBody;
+    throw new Error(apiError.error?.message ?? `Hedera setup failed with HTTP ${response.status}`);
+  }
+  return body as HederaSetupResult;
+}

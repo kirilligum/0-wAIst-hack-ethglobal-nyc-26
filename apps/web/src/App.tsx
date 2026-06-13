@@ -11,7 +11,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { Offer, OrderMode, OrderResult } from "@0waist/schemas";
-import { createOrder, fetchOffers } from "./api.js";
+import { createOrder, fetchOffers, HederaSetupResult, setupHedera } from "./api.js";
 
 function money(value: number): string {
   return `${value.toFixed(3)} INF`;
@@ -29,6 +29,14 @@ export default function App() {
   const [result, setResult] = useState<OrderResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [operatorId, setOperatorId] = useState("");
+  const [operatorKey, setOperatorKey] = useState("");
+  const [auditTopicId, setAuditTopicId] = useState("");
+  const [marketManifestFileId, setMarketManifestFileId] = useState("");
+  const [setupLoading, setSetupLoading] = useState(false);
+  const [setupResult, setSetupResult] = useState<HederaSetupResult | null>(null);
+  const [setupError, setSetupError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOffers()
@@ -54,6 +62,25 @@ export default function App() {
     }
   }
 
+  async function runHederaSetup() {
+    setSetupLoading(true);
+    setSetupError(null);
+    try {
+      const next = await setupHedera({
+        operatorId,
+        operatorKey,
+        auditTopicId: auditTopicId.trim() || undefined,
+        marketManifestFileId: marketManifestFileId.trim() || undefined
+      });
+      setSetupResult(next);
+      setOperatorKey("");
+    } catch (err) {
+      setSetupError(err instanceof Error ? err.message : "Hedera setup failed");
+    } finally {
+      setSetupLoading(false);
+    }
+  }
+
   return (
     <main className="shell">
       <section className="workbench">
@@ -67,6 +94,81 @@ export default function App() {
             Hedera Testnet
           </div>
         </header>
+
+        <section className="setup-strip">
+          <div>
+            <strong>Hedera setup</strong>
+            <span>{setupResult ? `Seeded topic ${setupResult.topic.topicId}` : "Save testnet credentials and create scanner activity."}</span>
+          </div>
+          <button type="button" onClick={() => setSetupOpen((value) => !value)}>
+            <ShieldCheck size={17} />
+            {setupOpen ? "Hide" : "Configure"}
+          </button>
+        </section>
+
+        {setupOpen ? (
+          <section className="setup-panel">
+            <div className="setup-fields">
+              <label className="field">
+                <span>Account ID</span>
+                <input
+                  placeholder="0.0.x"
+                  value={operatorId}
+                  onChange={(event) => setOperatorId(event.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span>Private key</span>
+                <input
+                  type="password"
+                  placeholder="302e..."
+                  value={operatorKey}
+                  onChange={(event) => setOperatorKey(event.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span>Existing HCS topic</span>
+                <input
+                  placeholder="optional"
+                  value={auditTopicId}
+                  onChange={(event) => setAuditTopicId(event.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span>Existing HFS file</span>
+                <input
+                  placeholder="optional"
+                  value={marketManifestFileId}
+                  onChange={(event) => setMarketManifestFileId(event.target.value)}
+                />
+              </label>
+            </div>
+            <button
+              className="primary"
+              type="button"
+              disabled={setupLoading || !operatorId.trim() || !operatorKey.trim()}
+              onClick={() => void runHederaSetup()}
+            >
+              {setupLoading ? <LoaderCircle className="spin" size={18} /> : <ShieldCheck size={18} />}
+              Save and seed Hedera
+            </button>
+            {setupError ? <p className="error">{setupError}</p> : null}
+            {setupResult ? (
+              <div className="setup-result">
+                <a href={setupResult.audit.hashScanUrl} target="_blank" rel="noreferrer">
+                  <ExternalLink size={16} />
+                  Open seed audit transaction
+                </a>
+                {setupResult.topic.hashScanUrl ? (
+                  <a href={setupResult.topic.hashScanUrl} target="_blank" rel="noreferrer">
+                    <ExternalLink size={16} />
+                    Open audit topic
+                  </a>
+                ) : null}
+              </div>
+            ) : null}
+          </section>
+        ) : null}
 
         <section className="order-grid">
           <form

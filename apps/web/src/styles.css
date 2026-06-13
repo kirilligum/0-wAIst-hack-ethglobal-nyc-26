@@ -79,7 +79,8 @@ h3 {
 .network-pill,
 .blocked,
 .hashscan,
-.section-title {
+.section-title,
+.setup-result a {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -93,6 +94,78 @@ h3 {
   background: #ffffff;
   color: #315260;
   font-weight: 700;
+}
+
+.setup-strip,
+.setup-panel {
+  margin-bottom: 16px;
+  border: 1px solid #d9e0de;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.setup-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.setup-strip div {
+  display: grid;
+  gap: 3px;
+}
+
+.setup-strip strong {
+  color: #172026;
+}
+
+.setup-strip span {
+  color: #66757d;
+  font-size: 0.9rem;
+}
+
+.setup-strip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #cfd9d7;
+  border-radius: 6px;
+  background: #f7faf9;
+  color: #1d4b61;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.setup-panel {
+  padding: 14px;
+}
+
+.setup-fields {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.setup-result {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.setup-result a {
+  min-height: 36px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #eef6f4;
+  color: #146c5f;
+  font-weight: 800;
+  text-decoration: none;
 }
 
 .order-grid,
@@ -379,6 +452,15 @@ input {
   }
 
   .seller-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .setup-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .setup-fields {
     grid-template-columns: 1fr;
   }
 }
