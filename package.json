@@ -1,0 +1,34 @@
+{
+  "name": "0-waist-inference",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.14.0",
+  "scripts": {
+    "build": "pnpm --filter @0waist/schemas build && pnpm --filter @0waist/crypto build && pnpm --filter @0waist/hedera build && pnpm --filter @0waist/proofrouter-mcp build && pnpm --filter @0waist/web build",
+    "dev": "concurrently -k -n api,web -c cyan,magenta \"pnpm --filter @0waist/proofrouter-mcp dev\" \"pnpm --filter @0waist/web dev\"",
+    "test": "vitest run && pnpm static-check",
+    "test:e2e": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/e2e.ts",
+    "static-check": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/staticCheck.ts",
+    "demo:seed": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/seed.ts",
+    "demo:judge": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/runJudgeMode.ts",
+    "demo:health": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/healthcheck.ts"
+  },
+  "dependencies": {
+    "@0waist/crypto": "workspace:*",
+    "@0waist/hedera": "workspace:*",
+    "@0waist/schemas": "workspace:*",
+    "dotenv": "^17.2.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.3.0",
+    "@vitejs/plugin-react": "^5.0.2",
+    "concurrently": "^9.2.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.4",
+    "vitest": "^3.2.4"
+  }
+}

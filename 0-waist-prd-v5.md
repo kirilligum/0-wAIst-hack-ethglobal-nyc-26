@@ -11,6 +11,53 @@
 
 ---
 
+## Implementation status — 2026-06-13
+
+Current branch: `codex/minimal-hedera-demo`
+
+### Built
+
+- [x] pnpm workspace skeleton with TypeScript packages, service, Vite frontend, demo scripts, and static forbidden-pattern check.
+- [x] Shared schemas for offers, orders, receipts, tools, traces, and prompt history.
+- [x] Shared hash, redaction, and AES-GCM local encryption helpers.
+- [x] ProofRouter service with one shared `executeInferenceOrder` workflow for Quick Buy and Router Agent.
+- [x] Seeded Alpha/Beta/Gamma seller offers.
+- [x] Quick Buy deterministic cheapest compatible seller selection.
+- [x] Router Agent selection through a real OpenAI LLM call when `mode=router-agent`.
+- [x] Real OpenAI Responses API answer generation from the server.
+- [x] Hedera SDK helpers for HCS audit topic creation, hash-only HCS message submission, HFS manifest creation/read, and HashScan links.
+- [x] Minimal Vite frontend showing prompt input, mode, budget, selected route, proof/payment status, answer, seller candidates, timeline, and HashScan action.
+- [x] Demo scripts: `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm test:e2e`.
+- [x] Solidity contract source placeholders for `ProxyRegistry`, `ProofEscrow`, and `VerifierRegistry`, including only `refundExpired` for timeout.
+
+### Verified
+
+- [x] `pnpm build` passes.
+- [x] `pnpm test` passes.
+- [x] `pnpm test:e2e` passes.
+- [x] Real OpenAI smoke ran through `pnpm demo:judge`.
+- [x] `pnpm demo:health` fails loudly and specifically for missing Hedera/P0 credentials.
+
+### Blocked before the minimal scanner demo
+
+- [ ] `HEDERA_OPERATOR_ID`
+- [ ] `HEDERA_OPERATOR_KEY`
+- [ ] `HCS_AUDIT_TOPIC_ID` after `pnpm demo:seed`, or no topic ID if `demo:seed` is allowed to create it first.
+
+### Not yet complete for full P0
+
+- [ ] HTS `INF` creation/association/funding.
+- [ ] Deployed Hedera EVM contracts and real contract calls.
+- [ ] Dynamic wallet login/delegated policy.
+- [ ] Hedera x402 INF escrow funding.
+- [ ] Real zkTLS verifier integration.
+- [ ] Scheduled refund execution.
+- [ ] Native Hedera batch settlement plus HCS receipt.
+- [ ] Hedera Agent Kit action wiring.
+- [ ] Cloudflare Pages deployment; `CLOUDFLARE_ACCOUNT_ID` is still needed.
+
+---
+
 ## 0. Lean implementation doctrine
 
 Codex must optimize for a small, maintainable, robust codebase.

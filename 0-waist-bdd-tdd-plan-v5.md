@@ -261,6 +261,31 @@ M8: Router Agent context and encrypted prompt history
 M9: UI, dashboard, README, demo readiness
 ```
 
+### Implementation status — 2026-06-13
+
+| Milestone | Status | Notes |
+|---|---|---|
+| M0 | Partial complete | Workspace, shared schemas, static checks, build/test/e2e scripts, and health check are implemented. Health intentionally fails for missing live credentials. |
+| M1 | Source scaffolded | Three Solidity contract source files exist, including `refundExpired`; deployment and full contract tests are not complete. |
+| M2 | Minimal scanner path implemented | Hedera SDK HCS/HFS helpers and `demo:seed` exist. Real testnet transaction submission is blocked until `HEDERA_OPERATOR_ID` and `HEDERA_OPERATOR_KEY` are configured. |
+| M3 | Partial complete | ProofRouter service and tool registry exist; full MCP protocol client validation remains open. |
+| M4 | Not started | Dynamic/x402 escrow funding remains blocked by missing credentials and integration work. |
+| M5 | Not started | Real zkTLS verifier remains blocked by verifier provider configuration. |
+| M6 | Not started | Scheduled refund readiness check exists; live scheduled transaction is not implemented. |
+| M7 | Not started | Batch readiness check exists; native batch settlement is not implemented. |
+| M8 | Partial complete | Encrypted prompt-history summaries and Router Agent LLM decision path exist. |
+| M9 | Partial complete | Frontend, README, and demo scripts exist; dashboard is folded into the first UI for the minimal demo. |
+
+Current verification:
+
+```text
+pnpm build      PASS
+pnpm test       PASS
+pnpm test:e2e   PASS
+pnpm demo:judge PASS with real OpenAI call and Hedera audit blocked
+pnpm demo:health FAIL until Hedera/P0 credentials are configured
+```
+
 ---
 
 # M0. Skeleton, schemas, and health checks
