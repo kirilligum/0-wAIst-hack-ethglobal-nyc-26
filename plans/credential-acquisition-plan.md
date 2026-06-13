@@ -4,6 +4,26 @@ Status: for another browser/login session.
 
 Goal: collect the remaining full-P0 credentials and paste them into the repo-local `.env` file. Do not commit `.env`.
 
+## Browser Capability Split
+
+Latest check: Codex Desktop in-app browser automation currently reports `no-iab-backends` for this thread. The Google Chrome bridge is being fixed separately. Until one of those bridges is controllable, do not block implementation on browser automation.
+
+Tasks Codex can still do without authenticated browser control:
+
+- [x] Verify local app/API from shell: `http://localhost:5173` and `http://localhost:8787`.
+- [x] Verify public HashScan links after Hedera transactions are submitted.
+- [x] Look up public docs and update repo plans.
+- [x] Run `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm build`, and `pnpm test`.
+- [ ] After credentials are pasted into `.env`, run health/build/test and continue implementation.
+
+Tasks for the separate browser/login session:
+
+- [ ] Use logged-in provider dashboards to copy credential values.
+- [ ] Paste those values into the repo-local `.env` file.
+- [ ] Do not paste secrets into committed files, docs, issues, PR descriptions, or chat unless explicitly intended.
+- [ ] If the Codex Desktop browser bridge becomes controllable, use it for navigation and non-secret page reading; still put final credential values into `.env`.
+- [ ] If the Chrome bridge becomes controllable, claim the already-authenticated dashboard tab only after confirming the target tab and credential values needed.
+
 ## Already Working
 
 These are already present locally and should stay in `.env`:

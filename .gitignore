@@ -10,4 +10,5 @@ runs/
 .local/
 *.log
 .wrangler/
+.playwright-cli/
 apps/web/dist/
