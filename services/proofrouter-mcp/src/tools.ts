@@ -1,4 +1,10 @@
 import { ProofRouterTool } from "@0waist/schemas";
+import {
+  batchSettlementReadiness,
+  dynamicReadiness,
+  scheduledRefundReadiness,
+  x402Readiness
+} from "@0waist/hedera";
 
 export const PROOFROUTER_TOOLS: ProofRouterTool[] = [
   {
@@ -54,3 +60,51 @@ export const PROOFROUTER_TOOLS: ProofRouterTool[] = [
     description: "Read the current bounded Dynamic wallet policy."
   }
 ];
+
+function missing(keys: string[], env: NodeJS.ProcessEnv): string[] {
+  return keys.filter((key) => !env[key]);
+}
+
+export function getHederaActionStatus(env: NodeJS.ProcessEnv = process.env) {
+  const contractMissing = [
+    ...(env.PROXY_REGISTRY_CONTRACT_ID || env.PROXY_REGISTRY_ADDRESS ? [] : ["PROXY_REGISTRY_CONTRACT_ID"]),
+    ...(env.PROOF_ESCROW_CONTRACT_ID || env.PROOF_ESCROW_ADDRESS ? [] : ["PROOF_ESCROW_CONTRACT_ID"]),
+    ...(env.VERIFIER_REGISTRY_CONTRACT_ID || env.VERIFIER_REGISTRY_ADDRESS ? [] : ["VERIFIER_REGISTRY_CONTRACT_ID"])
+  ];
+  const infMissing = missing(["HTS_INF_TOKEN_ID"], env);
+  const dynamic = dynamicReadiness(env);
+  const x402 = x402Readiness(env);
+  const scheduledRefund = scheduledRefundReadiness(env);
+  const batchSettlement = batchSettlementReadiness(env);
+
+  return {
+    tools: PROOFROUTER_TOOLS,
+    prerequisites: {
+      contracts: {
+        ready: contractMissing.length === 0,
+        missing: contractMissing
+      },
+      inf: {
+        ready: infMissing.length === 0,
+        missing: infMissing
+      },
+      dynamic,
+      x402
+    },
+    actions: {
+      openOrderViaX402: {
+        ready: contractMissing.length === 0 && infMissing.length === 0 && dynamic.ready && x402.ready,
+        missing: [...contractMissing, ...infMissing, ...dynamic.missing, ...x402.missing],
+        tool: "proofrouter.open_order_via_x402"
+      },
+      createRefundSchedule: {
+        ...scheduledRefund,
+        tool: "proofrouter.create_refund_schedule"
+      },
+      batchSettleAndLog: {
+        ...batchSettlement,
+        tool: "proofrouter.batch_settle_and_log"
+      }
+    }
+  };
+}

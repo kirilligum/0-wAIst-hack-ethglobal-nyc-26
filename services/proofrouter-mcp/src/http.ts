@@ -8,7 +8,7 @@ import { errorResponse } from "./errors.js";
 import { listProxyOffers } from "./offers.js";
 import { readPromptHistory } from "./promptHistory.js";
 import { saveAndSeedHedera } from "./setup.js";
-import { PROOFROUTER_TOOLS } from "./tools.js";
+import { getHederaActionStatus, PROOFROUTER_TOOLS } from "./tools.js";
 import { executeInferenceOrder } from "./workflow.js";
 
 for (const candidate of [resolve(process.cwd(), ".env"), resolve(process.cwd(), "../../.env")]) {
@@ -33,6 +33,10 @@ export function createApp(): Express {
 
   app.get("/api/tools", (_request, response) => {
     response.json({ tools: PROOFROUTER_TOOLS });
+  });
+
+  app.get("/api/hedera-actions", (_request, response) => {
+    response.json(getHederaActionStatus());
   });
 
   app.get("/api/offers", (_request, response) => {

@@ -39,6 +39,28 @@ export async function createOrder(input: {
   return body as OrderResult;
 }
 
+export interface HederaActionStatus {
+  prerequisites: {
+    contracts: { ready: boolean; missing: string[] };
+    inf: { ready: boolean; missing: string[] };
+    dynamic: { ready: boolean; missing: string[] };
+    x402: { ready: boolean; missing: string[] };
+  };
+  actions: {
+    openOrderViaX402: { ready: boolean; missing: string[]; tool: string };
+    createRefundSchedule: { ready: boolean; missing: string[]; tool: string; requiredFunction: "refundExpired" };
+    batchSettleAndLog: { ready: boolean; missing: string[]; tool: string; requiredActions: string[] };
+  };
+}
+
+export async function fetchHederaActionStatus(): Promise<HederaActionStatus> {
+  const response = await fetch(`${API_BASE_URL}/api/hedera-actions`);
+  if (!response.ok) {
+    throw new Error(`Hedera action status failed with HTTP ${response.status}`);
+  }
+  return await response.json() as HederaActionStatus;
+}
+
 export interface HederaSetupResult {
   status: "seeded";
   topic: {

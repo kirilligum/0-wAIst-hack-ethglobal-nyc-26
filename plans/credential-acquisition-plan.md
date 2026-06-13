@@ -8,6 +8,8 @@ Goal: collect the remaining full-P0 credentials and paste them into the repo-loc
 
 Latest check: Codex Desktop in-app browser automation currently reports `no-iab-backends` for this thread. The Google Chrome bridge is being fixed separately. Until one of those bridges is controllable, do not block implementation on browser automation.
 
+Follow-up check after the Hedera action-status UI change: the in-app browser bridge reported `Browser is not available: iab`. The local API was still verified from shell at `http://localhost:8787/api/hedera-actions`.
+
 Tasks Codex can still do without authenticated browser control:
 
 - [x] Verify local app/API from shell: `http://localhost:5173` and `http://localhost:8787`.

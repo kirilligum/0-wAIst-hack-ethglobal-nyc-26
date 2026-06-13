@@ -11,6 +11,7 @@ Implemented now:
 - Real OpenAI Responses API calls from the server.
 - Hedera Testnet HCS audit transaction submission when operator credentials and an audit topic are configured.
 - Hedera Testnet HTS `INF` token plus deployed `ProxyRegistry`, `ProofEscrow`, and `VerifierRegistry` contracts.
+- Hedera action readiness endpoint for INF, contracts, x402 escrow, refund schedule, and batch settlement.
 - HashScan links for submitted Hedera transactions.
 - Local redacted traces and encrypted prompt-history summaries.
 - Health checks that block full P0 claims until Hedera, Dynamic, x402, contracts, and zkTLS credentials are present.
@@ -109,4 +110,4 @@ Current status: `minimalDemo.ready=true`; `fullP0.ready=false`.
 
 ## Out Of Scope For This Slice
 
-This slice does not claim completed Dynamic login, x402 INF funding, live ProofEscrow order calls, scheduled refund execution, native Hedera batch settlement, or real zkTLS verification. Those remain blocked by credentials and integration work and are explicitly reported by health checks.
+This slice does not claim completed Dynamic login, x402 INF funding, live ProofEscrow order calls, scheduled refund execution, native Hedera batch settlement execution, or real zkTLS verification. The SDK helpers and readiness checks for scheduled refund and batch settlement exist; live execution remains blocked until there is a real funded order and verified receipt.

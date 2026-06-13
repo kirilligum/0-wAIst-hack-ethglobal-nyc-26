@@ -271,8 +271,8 @@ M9: UI, dashboard, README, demo readiness
 | M3 | Partial complete | ProofRouter service and tool registry exist; full MCP protocol client validation remains open. |
 | M4 | Not started | Dynamic/x402 escrow funding remains blocked by missing credentials and integration work. |
 | M5 | Not started | Real zkTLS verifier remains blocked by verifier provider configuration. |
-| M6 | Not started | Scheduled refund readiness check exists; live scheduled transaction is not implemented. |
-| M7 | Not started | Batch readiness check exists; native batch settlement is not implemented. |
+| M6 | Partial complete | SDK helper builds and can submit a Hedera Scheduled Transaction targeting `ProofEscrow.refundExpired(orderId)`. Live execution remains blocked until a real funded order exists. |
+| M7 | Partial complete | SDK helper ABI-encodes `ProofEscrow.settle`, builds a native Hedera `BatchTransaction` with an HCS receipt message, and exposes readiness in the API/UI. Live execution remains blocked until a real zkTLS verified receipt exists. |
 | M8 | Partial complete | Encrypted prompt-history summaries and Router Agent LLM decision path exist. |
 | M9 | Partial complete | Frontend, README, and demo scripts exist; dashboard is folded into the first UI for the minimal demo. |
 
@@ -286,6 +286,7 @@ pnpm demo:deploy PASS with live HTS INF and contract deployments
 pnpm demo:seed  PASS with real Hedera Testnet HCS activity and HFS manifest refresh
 pnpm demo:judge PASS with real OpenAI call and Hedera HCS audit
 pnpm demo:health FAIL for full P0, with minimalDemo.ready=true and scheduled/batch prerequisites ready
+curl /api/hedera-actions PASS locally; x402 order open remains blocked by Dynamic and x402 facilitator credentials
 ```
 
 ---

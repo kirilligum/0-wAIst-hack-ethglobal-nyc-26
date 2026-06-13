@@ -97,7 +97,8 @@ h3 {
 }
 
 .setup-strip,
-.setup-panel {
+.setup-panel,
+.action-strip {
   margin-bottom: 16px;
   border: 1px solid #d9e0de;
   border-radius: 8px;
@@ -143,6 +144,36 @@ h3 {
 
 .setup-panel {
   padding: 14px;
+}
+
+.action-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+}
+
+.action-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.action-chip.ready {
+  background: #eaf6f0;
+  color: #126349;
+}
+
+.action-chip.blocked-chip {
+  background: #f6ece2;
+  color: #7a4215;
 }
 
 .setup-fields {
@@ -462,5 +493,9 @@ input {
 
   .setup-fields {
     grid-template-columns: 1fr;
+  }
+
+  .action-strip {
+    grid-template-columns: 1fr 1fr;
   }
 }

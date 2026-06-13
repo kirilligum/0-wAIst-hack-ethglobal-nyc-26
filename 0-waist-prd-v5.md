@@ -33,6 +33,9 @@ Current branch: `codex/full-p0-continuation`
 - [x] Live API order audit transaction visible on HashScan: `0.0.9186037@1781386460.953715803`.
 - [x] Live HFS manifest refresh transaction visible on HashScan: `0.0.9186037@1781389738.626703938`.
 - [x] Minimal Vite frontend showing prompt input, mode, budget, selected route, proof/payment status, answer, seller candidates, timeline, and HashScan action.
+- [x] Frontend/API Hedera action readiness for INF, contracts, x402 escrow, refund schedule, and batch settlement.
+- [x] Hedera SDK helper to create a scheduled transaction targeting `ProofEscrow.refundExpired(orderId)`.
+- [x] Hedera SDK helper to build/submit a native batch containing `ProofEscrow.settle` and a hash-only HCS receipt message.
 - [x] Demo scripts: `pnpm demo:deploy`, `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm test:e2e`.
 - [x] Solidity contract source for `ProxyRegistry`, `ProofEscrow`, and `VerifierRegistry`, including INF locking, verifier-gated settlement, and only `refundExpired` for timeout.
 
@@ -63,8 +66,8 @@ Current branch: `codex/full-p0-continuation`
 - [ ] Dynamic wallet login/delegated policy.
 - [ ] Hedera x402 INF escrow funding.
 - [ ] Real zkTLS verifier integration.
-- [ ] Scheduled refund execution.
-- [ ] Native Hedera batch settlement plus HCS receipt.
+- [ ] Scheduled refund execution for a real funded order.
+- [ ] Native Hedera batch settlement execution plus HCS receipt for a real verified receipt.
 - [ ] Hedera Agent Kit action wiring.
 - [ ] Cloudflare Pages deployment; `CLOUDFLARE_ACCOUNT_ID` is still needed.
 

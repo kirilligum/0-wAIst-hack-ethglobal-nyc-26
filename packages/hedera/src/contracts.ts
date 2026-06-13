@@ -65,6 +65,15 @@ export function contractIdToEvmAddress(contractId: string): string {
   return `0x${ContractId.fromString(contractId).toSolidityAddress()}`;
 }
 
+export function resolveContractId(contractIdOrEvmAddress: string): ContractId {
+  const normalized = contractIdOrEvmAddress.startsWith("0x")
+    ? contractIdOrEvmAddress.slice(2)
+    : contractIdOrEvmAddress;
+  return /^[0-9a-fA-F]{40}$/.test(normalized)
+    ? ContractId.fromSolidityAddress(normalized)
+    : ContractId.fromString(contractIdOrEvmAddress);
+}
+
 export async function compileSolidityContracts(
   sourceDir = resolve(process.cwd(), "contracts/src")
 ): Promise<Record<ContractName, CompiledContract>> {

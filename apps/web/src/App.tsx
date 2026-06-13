@@ -11,7 +11,14 @@ import {
   Sparkles
 } from "lucide-react";
 import { Offer, OrderMode, OrderResult } from "@0waist/schemas";
-import { createOrder, fetchOffers, HederaSetupResult, setupHedera } from "./api.js";
+import {
+  createOrder,
+  fetchHederaActionStatus,
+  fetchOffers,
+  HederaActionStatus,
+  HederaSetupResult,
+  setupHedera
+} from "./api.js";
 
 function money(value: number): string {
   return `${value.toFixed(3)} INF`;
@@ -37,11 +44,15 @@ export default function App() {
   const [setupLoading, setSetupLoading] = useState(false);
   const [setupResult, setSetupResult] = useState<HederaSetupResult | null>(null);
   const [setupError, setSetupError] = useState<string | null>(null);
+  const [hederaActions, setHederaActions] = useState<HederaActionStatus | null>(null);
 
   useEffect(() => {
     fetchOffers()
       .then(setOffers)
       .catch((err: Error) => setError(err.message));
+    fetchHederaActionStatus()
+      .then(setHederaActions)
+      .catch(() => setHederaActions(null));
   }, []);
 
   const selectedSeller = useMemo(() => {
@@ -167,6 +178,31 @@ export default function App() {
                 ) : null}
               </div>
             ) : null}
+          </section>
+        ) : null}
+
+        {hederaActions ? (
+          <section className="action-strip">
+            <div className={hederaActions.prerequisites.inf.ready ? "action-chip ready" : "action-chip blocked-chip"}>
+              <ShieldCheck size={16} />
+              INF
+            </div>
+            <div className={hederaActions.prerequisites.contracts.ready ? "action-chip ready" : "action-chip blocked-chip"}>
+              <BadgeCheck size={16} />
+              Contracts
+            </div>
+            <div className={hederaActions.actions.openOrderViaX402.ready ? "action-chip ready" : "action-chip blocked-chip"}>
+              <CircleDollarSign size={16} />
+              x402 escrow
+            </div>
+            <div className={hederaActions.actions.createRefundSchedule.ready ? "action-chip ready" : "action-chip blocked-chip"}>
+              <Activity size={16} />
+              Refund schedule
+            </div>
+            <div className={hederaActions.actions.batchSettleAndLog.ready ? "action-chip ready" : "action-chip blocked-chip"}>
+              <Route size={16} />
+              Batch settle
+            </div>
           </section>
         ) : null}
 
