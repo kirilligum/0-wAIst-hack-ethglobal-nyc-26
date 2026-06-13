@@ -6,7 +6,8 @@ export default defineConfig({
       "packages/**/*.test.ts",
       "services/**/*.test.ts",
       "apps/**/*.test.ts",
-      "demo/**/*.test.ts"
+      "demo/**/*.test.ts",
+      "contracts/**/*.test.ts"
     ],
     environment: "node"
   }

@@ -8,6 +8,7 @@ import { createHederaClient, HederaConfig } from "./config.js";
 
 export interface TopicCreationResult {
   topicId: string;
+  created?: boolean;
   transactionId: string;
   hashScanUrl: string;
 }
@@ -57,12 +58,26 @@ export async function createAuditTopic(config: HederaConfig): Promise<TopicCreat
     const transactionId = response.transactionId.toString();
     return {
       topicId,
+      created: true,
       transactionId,
       hashScanUrl: hashScanTransactionUrl(transactionId, config.network)
     };
   } finally {
     client.close();
   }
+}
+
+export async function createOrLoadAuditTopic(config: HederaConfig): Promise<TopicCreationResult> {
+  if (config.auditTopicId) {
+    return {
+      topicId: config.auditTopicId,
+      created: false,
+      transactionId: "",
+      hashScanUrl: hashScanTopicUrl(config.auditTopicId, config.network)
+    };
+  }
+
+  return createAuditTopic(config);
 }
 
 export async function submitAuditMessage(

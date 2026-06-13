@@ -2,6 +2,7 @@ import {
   FileContentsQuery,
   FileCreateTransaction,
   FileId,
+  FileUpdateTransaction,
   PrivateKey
 } from "@hashgraph/sdk";
 import { Offer } from "@0waist/schemas";
@@ -12,16 +13,35 @@ export interface MarketManifest {
   schemaVersion: "0waist.market.v1";
   paymentAsset: "INF";
   network: "hedera-testnet";
+  infTokenId?: string;
   auditTopicId?: string;
+  mcpEndpoint?: string;
+  x402?: {
+    network: "hedera-testnet";
+    paymentAsset: "INF";
+    facilitatorUrl?: string;
+  };
+  contracts?: {
+    proxyRegistry?: string;
+    proofEscrow?: string;
+    verifierRegistry?: string;
+  };
   sellers: Offer[];
   proofPolicy: {
     mode: "direct_zktls_api";
     publicArtifactPolicy: "hash_only";
+    providerPolicyId?: string;
+  };
+  serviceMetadata?: {
+    serviceId: "0-waist";
+    agentId: "0waist.proofrouter";
+    serviceKind: "ai_subscription_proxy_router";
   };
 }
 
 export interface ManifestCreationResult {
   fileId: string;
+  created?: boolean;
   transactionId: string;
   hashScanUrl: string;
 }
@@ -45,12 +65,50 @@ export async function createMarketManifest(
     const transactionId = response.transactionId.toString();
     return {
       fileId,
+      created: true,
       transactionId,
       hashScanUrl: hashScanTransactionUrl(transactionId, config.network)
     };
   } finally {
     client.close();
   }
+}
+
+export async function updateMarketManifest(
+  config: HederaConfig,
+  manifest: MarketManifest,
+  fileId = config.marketManifestFileId
+): Promise<ManifestCreationResult> {
+  if (!fileId) {
+    throw new Error("HFS_MARKET_MANIFEST_FILE_ID is required to update the market manifest");
+  }
+
+  const client = createHederaClient(config);
+  try {
+    const response = await new FileUpdateTransaction()
+      .setFileId(FileId.fromString(fileId))
+      .setContents(JSON.stringify(manifest))
+      .execute(client);
+    const transactionId = response.transactionId.toString();
+    await response.getReceipt(client);
+    return {
+      fileId,
+      created: false,
+      transactionId,
+      hashScanUrl: hashScanTransactionUrl(transactionId, config.network)
+    };
+  } finally {
+    client.close();
+  }
+}
+
+export async function createOrUpdateMarketManifest(
+  config: HederaConfig,
+  manifest: MarketManifest
+): Promise<ManifestCreationResult> {
+  return config.marketManifestFileId
+    ? updateMarketManifest(config, manifest, config.marketManifestFileId)
+    : createMarketManifest(config, manifest);
 }
 
 export async function readMarketManifest(

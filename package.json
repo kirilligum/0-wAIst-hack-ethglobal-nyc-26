@@ -10,6 +10,7 @@
     "test": "vitest run && pnpm static-check",
     "test:e2e": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/e2e.ts",
     "static-check": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/staticCheck.ts",
+    "demo:deploy": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/deployHedera.ts",
     "demo:seed": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/seed.ts",
     "demo:judge": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/runJudgeMode.ts",
     "demo:health": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/healthcheck.ts"
@@ -26,6 +27,7 @@
     "@types/node": "^24.3.0",
     "@vitejs/plugin-react": "^5.0.2",
     "concurrently": "^9.2.1",
+    "solc": "^0.8.35",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "vite": "^7.1.4",

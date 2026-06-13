@@ -52,4 +52,8 @@ contract ProxyRegistry {
         offer.active = false;
         emit OfferDeactivated(offerId);
     }
+
+    function getOffer(uint256 offerId) external view returns (Offer memory) {
+        return offers[offerId];
+    }
 }

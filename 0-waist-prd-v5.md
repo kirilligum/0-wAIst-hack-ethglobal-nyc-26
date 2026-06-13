@@ -13,7 +13,7 @@
 
 ## Implementation status — 2026-06-13
 
-Current branch: `codex/minimal-hedera-demo`
+Current branch: `codex/full-p0-continuation`
 
 ### Built
 
@@ -28,10 +28,13 @@ Current branch: `codex/minimal-hedera-demo`
 - [x] Hedera SDK helpers for HCS audit topic creation, hash-only HCS message submission, HFS manifest creation/read, and HashScan links.
 - [x] Live Hedera Testnet HCS topic `0.0.9226268`.
 - [x] Live Hedera Testnet HFS market manifest `0.0.9226269`.
+- [x] Live Hedera Testnet HTS `INF` token `0.0.9226625`.
+- [x] Live Hedera Testnet contracts: `ProxyRegistry` `0.0.9226646`, `ProofEscrow` `0.0.9226648`, `VerifierRegistry` `0.0.9226643`.
 - [x] Live API order audit transaction visible on HashScan: `0.0.9186037@1781386460.953715803`.
+- [x] Live HFS manifest refresh transaction visible on HashScan: `0.0.9186037@1781389738.626703938`.
 - [x] Minimal Vite frontend showing prompt input, mode, budget, selected route, proof/payment status, answer, seller candidates, timeline, and HashScan action.
-- [x] Demo scripts: `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm test:e2e`.
-- [x] Solidity contract source placeholders for `ProxyRegistry`, `ProofEscrow`, and `VerifierRegistry`, including only `refundExpired` for timeout.
+- [x] Demo scripts: `pnpm demo:deploy`, `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm test:e2e`.
+- [x] Solidity contract source for `ProxyRegistry`, `ProofEscrow`, and `VerifierRegistry`, including INF locking, verifier-gated settlement, and only `refundExpired` for timeout.
 
 ### Verified
 
@@ -40,6 +43,7 @@ Current branch: `codex/minimal-hedera-demo`
 - [x] `pnpm test:e2e` passes.
 - [x] Real OpenAI smoke ran through `pnpm demo:judge`.
 - [x] `pnpm demo:seed` creates visible Hedera Testnet HCS activity.
+- [x] `pnpm demo:deploy` creates/loads HTS `INF` and deploys the three Hedera EVM contracts.
 - [x] Local API order endpoint submits hash-only HCS audit messages and returns HashScan links.
 - [x] `pnpm demo:health` reports `minimalDemo.ready=true` and fails full P0 for missing locked integrations.
 
@@ -52,8 +56,10 @@ Current branch: `codex/minimal-hedera-demo`
 
 ### Not yet complete for full P0
 
-- [ ] HTS `INF` creation/association/funding.
-- [ ] Deployed Hedera EVM contracts and real contract calls.
+- [x] HTS `INF` creation.
+- [x] Hedera EVM contract deployment.
+- [ ] Buyer/seller INF association and funding through the real wallet path.
+- [ ] Real contract calls for order open, settlement, and refund.
 - [ ] Dynamic wallet login/delegated policy.
 - [ ] Hedera x402 INF escrow funding.
 - [ ] Real zkTLS verifier integration.

@@ -8,6 +8,7 @@ export interface HederaConfig {
   operatorKey: string;
   auditTopicId?: string;
   marketManifestFileId?: string;
+  infTokenId?: string;
 }
 
 export const HEDERA_MINIMAL_ENV = [
@@ -37,7 +38,8 @@ export function loadHederaConfig(env: NodeJS.ProcessEnv = process.env): HederaCo
     operatorId: env.HEDERA_OPERATOR_ID!,
     operatorKey: env.HEDERA_OPERATOR_KEY!,
     auditTopicId: env.HCS_AUDIT_TOPIC_ID,
-    marketManifestFileId: env.HFS_MARKET_MANIFEST_FILE_ID
+    marketManifestFileId: env.HFS_MARKET_MANIFEST_FILE_ID,
+    infTokenId: env.HTS_INF_TOKEN_ID
   };
 }
 

@@ -1,7 +1,8 @@
 import "dotenv/config";
 import {
-  createAuditTopic,
-  createMarketManifest,
+  createOrLoadAuditTopic,
+  createOrLoadInfToken,
+  createOrUpdateMarketManifest,
   loadHederaConfig,
   submitAuditMessage
 } from "@0waist/hedera";
@@ -10,28 +11,44 @@ import { SEEDED_OFFERS } from "../services/proofrouter-mcp/src/offers.js";
 
 async function main() {
   const baseConfig = loadHederaConfig(process.env);
-  const topic = baseConfig.auditTopicId
-    ? { topicId: baseConfig.auditTopicId, transactionId: undefined, hashScanUrl: undefined }
-    : await createAuditTopic(baseConfig);
+  const inf = await createOrLoadInfToken(baseConfig);
+  const topic = await createOrLoadAuditTopic(baseConfig);
 
   const config = {
     ...baseConfig,
-    auditTopicId: topic.topicId
+    auditTopicId: topic.topicId,
+    infTokenId: inf.tokenId
   };
 
-  const manifest = process.env.HFS_MARKET_MANIFEST_FILE_ID
-    ? { fileId: process.env.HFS_MARKET_MANIFEST_FILE_ID, transactionId: undefined, hashScanUrl: undefined }
-    : await createMarketManifest(config, {
-      schemaVersion: "0waist.market.v1",
-      paymentAsset: "INF",
+  const manifest = await createOrUpdateMarketManifest(config, {
+    schemaVersion: "0waist.market.v1",
+    paymentAsset: "INF",
+    network: "hedera-testnet",
+    infTokenId: inf.tokenId,
+    auditTopicId: topic.topicId,
+    mcpEndpoint: process.env.MCP_PUBLIC_URL ?? "http://localhost:8787/mcp",
+    x402: {
       network: "hedera-testnet",
-      auditTopicId: topic.topicId,
-      sellers: SEEDED_OFFERS,
-      proofPolicy: {
-        mode: "direct_zktls_api",
-        publicArtifactPolicy: "hash_only"
-      }
-    });
+      paymentAsset: "INF",
+      facilitatorUrl: process.env.X402_FACILITATOR_URL
+    },
+    contracts: {
+      proxyRegistry: process.env.PROXY_REGISTRY_ADDRESS,
+      proofEscrow: process.env.PROOF_ESCROW_ADDRESS,
+      verifierRegistry: process.env.VERIFIER_REGISTRY_ADDRESS
+    },
+    sellers: SEEDED_OFFERS,
+    proofPolicy: {
+      mode: "direct_zktls_api",
+      publicArtifactPolicy: "hash_only",
+      providerPolicyId: process.env.ZKTLS_PROVIDER_POLICY_ID
+    },
+    serviceMetadata: {
+      serviceId: "0-waist",
+      agentId: "0waist.proofrouter",
+      serviceKind: "ai_subscription_proxy_router"
+    }
+  });
 
   const createdAt = new Date().toISOString();
   const demoPromptHash = promptHash("demo seed");
@@ -56,11 +73,14 @@ async function main() {
   console.log(JSON.stringify({
     status: "seeded",
     topic,
+    inf,
     manifest,
     audit,
     envToAdd: {
       HCS_AUDIT_TOPIC_ID: topic.topicId,
-      HFS_MARKET_MANIFEST_FILE_ID: manifest.fileId
+      HFS_MARKET_MANIFEST_FILE_ID: manifest.fileId,
+      HTS_INF_TOKEN_ID: inf.tokenId,
+      HTS_INF_TOKEN_EVM_ADDRESS: inf.evmAddress
     }
   }, null, 2));
 }

@@ -10,6 +10,7 @@ Implemented now:
 - ProofRouter service with one shared execution workflow.
 - Real OpenAI Responses API calls from the server.
 - Hedera Testnet HCS audit transaction submission when operator credentials and an audit topic are configured.
+- Hedera Testnet HTS `INF` token plus deployed `ProxyRegistry`, `ProofEscrow`, and `VerifierRegistry` contracts.
 - HashScan links for submitted Hedera transactions.
 - Local redacted traces and encrypted prompt-history summaries.
 - Health checks that block full P0 claims until Hedera, Dynamic, x402, contracts, and zkTLS credentials are present.
@@ -18,8 +19,13 @@ Live Hedera Testnet demo artifacts:
 
 - HCS audit topic: `0.0.9226268`
 - HFS market manifest: `0.0.9226269`
+- HTS INF token: `0.0.9226625`
+- ProxyRegistry: `0.0.9226646`
+- ProofEscrow: `0.0.9226648`
+- VerifierRegistry: `0.0.9226643`
 - Latest frontend/API-equivalent order audit: [HashScan transaction](https://hashscan.io/testnet/transaction/0.0.9186037%401781386460.953715803)
-- Latest seed audit sequence: `2`
+- Latest manifest refresh: [HashScan transaction](https://hashscan.io/testnet/transaction/0.0.9186037%401781389738.626703938)
+- Latest seed audit sequence: `6`
 
 The minimal scanner demo requires:
 
@@ -89,6 +95,8 @@ sequenceDiagram
 pnpm build
 pnpm test
 pnpm test:e2e
+pnpm demo:deploy
+pnpm demo:seed
 pnpm demo:health
 ```
 
@@ -101,4 +109,4 @@ Current status: `minimalDemo.ready=true`; `fullP0.ready=false`.
 
 ## Out Of Scope For This Slice
 
-This slice does not claim completed Dynamic login, x402 INF funding, ProofEscrow settlement, scheduled refund execution, native Hedera batch settlement, or real zkTLS verification. Those remain blocked by credentials and integration work and are explicitly reported by health checks.
+This slice does not claim completed Dynamic login, x402 INF funding, live ProofEscrow order calls, scheduled refund execution, native Hedera batch settlement, or real zkTLS verification. Those remain blocked by credentials and integration work and are explicitly reported by health checks.
