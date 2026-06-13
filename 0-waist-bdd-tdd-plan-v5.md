@@ -38,8 +38,10 @@ Forbidden product-code patterns:
 ```text
 expireOrder
 manualRefund
+timeoutRefund
 forceRefund
 settleSequential
+settleThenLog
 sequential_settle_and_log
 scoreRoutes
 route_score
@@ -52,6 +54,9 @@ ChainAdapter
 FallbackVerifier
 demoVerifier
 stubVerifier
+fakeProof
+mockVerifier
+VERIFIER_MODE
 MockVerifierService in non-test files
 ERC8004AgentRegistryLite
 HCS_DECISIONS_TOPIC_ID
@@ -293,6 +298,111 @@ MCP stdio smoke PASS; client lists and calls `proofrouter.list_proxy_offers`
 
 ---
 
+## 4.1 Direct-Plan Refinements Adopted — 2026-06-13
+
+The uploaded `0-wAIst Direct BDD/TDD Implementation Plan v2.0.0` adds useful verification discipline. The current lean plan remains the implementation source of truth, with these refinements adopted for the remaining phases.
+
+### Execution controls
+
+```text
+repair_attempt_limit_per_blocked_external_subtask: 2
+reflection_after_failure: one short failure analysis before the next code edit
+stop_threshold: stop and request scope/credential guidance when a locked live integration cannot be proven without a forbidden alternate path
+checkpoint_rule: commit at coherent phase boundaries and after live Hedera-visible progress
+browser_rule: do not block implementation on browser automation while both Codex in-app browser and Chrome bridge are unavailable
+```
+
+### Requirement IDs for new tests and evidence
+
+```text
+REQ-001 exact product name in README/UI/dashboard/submission text
+REQ-002 one canonical executeInferenceOrder path after seller selection
+REQ-003 Quick Buy chooses cheapest active compatible offer
+REQ-004 Router Agent chooses from context and MCP tools without formula scoring
+REQ-005 sellers publish offers through ProxyRegistry
+REQ-006 Dynamic/x402 funds ProofEscrow with HTS INF
+REQ-007 seller proxy produces real zkTLS verifier-signed receipt
+REQ-008 live scheduled transaction targets refundExpired(orderId)
+REQ-009 one native Hedera batch contains settle plus HCS receipt
+REQ-010 UI includes clean user page and technical agent dashboard
+REQ-011 no fallback paths, duplicate paths, generic adapters, or hidden formula logic
+REQ-012 demo:health fails fast with structured missing-dependency errors
+REQ-013 public artifacts never contain plaintext prompts, API keys, auth headers, or private prompt text
+REQ-014 Router Agent uses one real ProofRouter MCP server
+REQ-015 Dynamic delegated wallet is the live buyer wallet path
+REQ-016 one HFS market manifest, one HCS audit topic, and one canonical trace format
+REQ-017 every order trace keeps consistent orderId, requestHash, responseHash, proofHash, scheduleId, batch transaction ID, and HCS sequence
+```
+
+### Verification IDs to use as the command surface grows
+
+```text
+TEST-001 static architecture and anti-debt scan
+TEST-002 core schemas and ProofEscrow contract behavior
+TEST-003 Hedera primitives and artifact resolution
+TEST-004 Dynamic x402 escrow funding
+TEST-005 real zkTLS receipt
+TEST-006 live scheduled refund
+TEST-007 batch settlement and HCS receipt
+TEST-008 MCP Router Agent and encrypted prompt history
+TEST-009 canonical UI and execution E2E
+TEST-010 submission documentation static check
+TEST-011 full verification suite
+EVAL-001 seeded Router Agent decision reaches 100% pass without formula tokens
+EVAL-002 three consecutive canonical demo runs pass under 180 seconds each
+EVAL-003 Hedera artifact completeness reaches 100%
+```
+
+Existing commands remain valid while the fuller command aliases are introduced. New tests should include grep-able IDs such as `// TEST-008` when practical.
+
+### Trace and artifact contract
+
+The canonical trace directory should converge on this shape as live integrations land:
+
+```text
+runs/order-<orderId>/
+  request.redacted.json
+  offers.json
+  manifest.json
+  context.json
+  decision.json
+  x402-escrow.json
+  scheduled-refund.json
+  zktls-receipt.json
+  batch-settlement.json
+  summary.json
+```
+
+Public trace files may include hashes, summaries, redacted excerpts, transaction IDs, schedule IDs, HCS sequence numbers, and verifier public metadata. They must not include plaintext prompts, provider API keys, auth headers, or verifier private keys.
+
+### Evidence and ADR loop
+
+Maintain `plans/execution-log.md` for bounded phase status, completed steps, quantitative results, failed attempts, deviations, and ADR updates. Add ADR files before final submission for:
+
+```text
+ADR-001 one canonical execution path
+ADR-002 real zkTLS only
+ADR-003 HTS INF as the only P0 product asset
+ADR-004 x402 funds ProofEscrow, never direct final seller payment
+ADR-005 Dynamic delegated wallet path
+ADR-006 refundExpired(orderId) as the only timeout function
+ADR-007 batch settlement plus HCS receipt as the only settlement shell
+ADR-008 one HCS audit topic and one HFS market manifest
+ADR-009 real MCP server as the only agent tool protocol
+ADR-010 Router Agent uses context and tools, not formula scoring
+ADR-011 encrypted local prompt history and hash-only public artifacts
+```
+
+### Useful deltas not adopted verbatim
+
+```text
+HCS message naming: the direct plan says DECISION/SCHEDULE/RECEIPT, while the current PRD/schema already allow DECISION/RECEIPT/TIMEOUT/SETTLEMENT. Do not remove existing message types midstream; consider adding SCHEDULE as a typed alias when scheduled-refund trace work lands.
+Repository shape: keep the current pnpm workspace packages/services/apps layout instead of moving files into a flat src/ tree.
+Hardhat: do not add Hardhat solely because the direct plan mentions it; add it only if local Solidity runtime tests need it beyond the current solc compile coverage.
+```
+
+---
+
 # M0. Skeleton, schemas, and health checks
 
 ## BDD
@@ -312,6 +422,8 @@ Feature: Project skeleton
 2. Create shared schemas for offers, orders, receipts, tools, traces, and prompt history.
 3. Create static checks for forbidden terms.
 4. Add `demo:health` with structured missing-dependency output.
+5. Maintain `plans/execution-log.md` for phase evidence and blocked external integrations.
+6. Add command aliases for `test:static`, `test:contracts`, `test:hedera`, `test:mcp`, `test:zktls`, eval commands, and `verify:all` as those suites become real.
 
 ## Done when
 
@@ -726,6 +838,7 @@ README contains product name
 README contains one shared product path
 README contains Mermaid architecture and sequence diagrams
 README contains Hedera usage section
+README or docs contain ADR index matching implemented behavior
 README does not claim unsupported fallback or future behavior as complete
 ```
 
