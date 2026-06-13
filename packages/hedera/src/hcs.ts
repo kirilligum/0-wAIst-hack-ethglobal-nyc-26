@@ -45,20 +45,24 @@ export function assertNoPublicPlaintext(payload: string): void {
 
 export async function createAuditTopic(config: HederaConfig): Promise<TopicCreationResult> {
   const client = createHederaClient(config);
-  const response = await new TopicCreateTransaction()
-    .setTopicMemo("0waist.audit")
-    .execute(client);
-  const receipt = await response.getReceipt(client);
-  const topicId = receipt.topicId?.toString();
-  if (!topicId) {
-    throw new Error("Hedera did not return an audit topic ID");
+  try {
+    const response = await new TopicCreateTransaction()
+      .setTopicMemo("0waist.audit")
+      .execute(client);
+    const receipt = await response.getReceipt(client);
+    const topicId = receipt.topicId?.toString();
+    if (!topicId) {
+      throw new Error("Hedera did not return an audit topic ID");
+    }
+    const transactionId = response.transactionId.toString();
+    return {
+      topicId,
+      transactionId,
+      hashScanUrl: hashScanTransactionUrl(transactionId, config.network)
+    };
+  } finally {
+    client.close();
   }
-  const transactionId = response.transactionId.toString();
-  return {
-    topicId,
-    transactionId,
-    hashScanUrl: hashScanTransactionUrl(transactionId, config.network)
-  };
 }
 
 export async function submitAuditMessage(
@@ -71,17 +75,21 @@ export async function submitAuditMessage(
 
   const client = createHederaClient(config);
   const payload = serializeAuditMessage(message);
-  const response = await new TopicMessageSubmitTransaction()
-    .setTopicId(TopicId.fromString(config.auditTopicId))
-    .setMessage(payload)
-    .execute(client);
-  const receipt = await response.getReceipt(client);
-  const transactionId = response.transactionId.toString();
+  try {
+    const response = await new TopicMessageSubmitTransaction()
+      .setTopicId(TopicId.fromString(config.auditTopicId))
+      .setMessage(payload)
+      .execute(client);
+    const receipt = await response.getReceipt(client);
+    const transactionId = response.transactionId.toString();
 
-  return {
-    topicId: config.auditTopicId,
-    transactionId,
-    sequenceNumber: receipt.topicSequenceNumber?.toString(),
-    hashScanUrl: hashScanTransactionUrl(transactionId, config.network)
-  };
+    return {
+      topicId: config.auditTopicId,
+      transactionId,
+      sequenceNumber: receipt.topicSequenceNumber?.toString(),
+      hashScanUrl: hashScanTransactionUrl(transactionId, config.network)
+    };
+  } finally {
+    client.close();
+  }
 }

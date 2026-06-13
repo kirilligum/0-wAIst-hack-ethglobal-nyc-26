@@ -26,6 +26,9 @@ Current branch: `codex/minimal-hedera-demo`
 - [x] Router Agent selection through a real OpenAI LLM call when `mode=router-agent`.
 - [x] Real OpenAI Responses API answer generation from the server.
 - [x] Hedera SDK helpers for HCS audit topic creation, hash-only HCS message submission, HFS manifest creation/read, and HashScan links.
+- [x] Live Hedera Testnet HCS topic `0.0.9226268`.
+- [x] Live Hedera Testnet HFS market manifest `0.0.9226269`.
+- [x] Live API order audit transaction visible on HashScan: `0.0.9186037@1781386460.953715803`.
 - [x] Minimal Vite frontend showing prompt input, mode, budget, selected route, proof/payment status, answer, seller candidates, timeline, and HashScan action.
 - [x] Demo scripts: `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm test:e2e`.
 - [x] Solidity contract source placeholders for `ProxyRegistry`, `ProofEscrow`, and `VerifierRegistry`, including only `refundExpired` for timeout.
@@ -36,13 +39,16 @@ Current branch: `codex/minimal-hedera-demo`
 - [x] `pnpm test` passes.
 - [x] `pnpm test:e2e` passes.
 - [x] Real OpenAI smoke ran through `pnpm demo:judge`.
-- [x] `pnpm demo:health` fails loudly and specifically for missing Hedera/P0 credentials.
+- [x] `pnpm demo:seed` creates visible Hedera Testnet HCS activity.
+- [x] Local API order endpoint submits hash-only HCS audit messages and returns HashScan links.
+- [x] `pnpm demo:health` reports `minimalDemo.ready=true` and fails full P0 for missing locked integrations.
 
-### Blocked before the minimal scanner demo
+### Minimal scanner demo
 
-- [ ] `HEDERA_OPERATOR_ID`
-- [ ] `HEDERA_OPERATOR_KEY`
-- [ ] `HCS_AUDIT_TOPIC_ID` after `pnpm demo:seed`, or no topic ID if `demo:seed` is allowed to create it first.
+- [x] Frontend running locally at `http://localhost:5173`.
+- [x] API running locally at `http://localhost:8787`.
+- [x] Real OpenAI call path working.
+- [x] Real Hedera Testnet scanner activity working.
 
 ### Not yet complete for full P0
 

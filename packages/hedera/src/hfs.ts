@@ -31,22 +31,26 @@ export async function createMarketManifest(
   manifest: MarketManifest
 ): Promise<ManifestCreationResult> {
   const client = createHederaClient(config);
-  const key = PrivateKey.fromString(config.operatorKey);
-  const response = await new FileCreateTransaction()
-    .setKeys([key.publicKey])
-    .setContents(JSON.stringify(manifest))
-    .execute(client);
-  const receipt = await response.getReceipt(client);
-  const fileId = receipt.fileId?.toString();
-  if (!fileId) {
-    throw new Error("Hedera did not return a market manifest file ID");
+  try {
+    const key = PrivateKey.fromString(config.operatorKey);
+    const response = await new FileCreateTransaction()
+      .setKeys([key.publicKey])
+      .setContents(JSON.stringify(manifest))
+      .execute(client);
+    const receipt = await response.getReceipt(client);
+    const fileId = receipt.fileId?.toString();
+    if (!fileId) {
+      throw new Error("Hedera did not return a market manifest file ID");
+    }
+    const transactionId = response.transactionId.toString();
+    return {
+      fileId,
+      transactionId,
+      hashScanUrl: hashScanTransactionUrl(transactionId, config.network)
+    };
+  } finally {
+    client.close();
   }
-  const transactionId = response.transactionId.toString();
-  return {
-    fileId,
-    transactionId,
-    hashScanUrl: hashScanTransactionUrl(transactionId, config.network)
-  };
 }
 
 export async function readMarketManifest(
@@ -58,8 +62,12 @@ export async function readMarketManifest(
   }
 
   const client = createHederaClient(config);
-  const contents = await new FileContentsQuery()
-    .setFileId(FileId.fromString(fileId))
-    .execute(client);
-  return JSON.parse(Buffer.from(contents).toString("utf8")) as MarketManifest;
+  try {
+    const contents = await new FileContentsQuery()
+      .setFileId(FileId.fromString(fileId))
+      .execute(client);
+    return JSON.parse(Buffer.from(contents).toString("utf8")) as MarketManifest;
+  } finally {
+    client.close();
+  }
 }

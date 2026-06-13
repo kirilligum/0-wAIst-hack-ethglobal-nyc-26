@@ -14,6 +14,13 @@ Implemented now:
 - Local redacted traces and encrypted prompt-history summaries.
 - Health checks that block full P0 claims until Hedera, Dynamic, x402, contracts, and zkTLS credentials are present.
 
+Live Hedera Testnet demo artifacts:
+
+- HCS audit topic: `0.0.9226268`
+- HFS market manifest: `0.0.9226269`
+- Latest frontend/API-equivalent order audit: [HashScan transaction](https://hashscan.io/testnet/transaction/0.0.9186037%401781386460.953715803)
+- Latest seed audit sequence: `2`
+
 The minimal scanner demo requires:
 
 ```bash
@@ -89,6 +96,8 @@ pnpm demo:health
 
 - `minimalDemo`: OpenAI plus Hedera HCS scanner demo readiness.
 - `fullP0`: every locked PRD integration.
+
+Current status: `minimalDemo.ready=true`; `fullP0.ready=false`.
 
 ## Out Of Scope For This Slice
 

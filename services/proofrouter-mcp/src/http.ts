@@ -1,5 +1,7 @@
-import "dotenv/config";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import cors from "cors";
+import dotenv from "dotenv";
 import express, { type Express } from "express";
 import { OrderRequestSchema } from "@0waist/schemas";
 import { errorResponse } from "./errors.js";
@@ -8,6 +10,13 @@ import { readPromptHistory } from "./promptHistory.js";
 import { saveAndSeedHedera } from "./setup.js";
 import { PROOFROUTER_TOOLS } from "./tools.js";
 import { executeInferenceOrder } from "./workflow.js";
+
+for (const candidate of [resolve(process.cwd(), ".env"), resolve(process.cwd(), "../../.env")]) {
+  if (existsSync(candidate)) {
+    dotenv.config({ path: candidate, override: false });
+    break;
+  }
+}
 
 export function createApp(): Express {
   const app = express();

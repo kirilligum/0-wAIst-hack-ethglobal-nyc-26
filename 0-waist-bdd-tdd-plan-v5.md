@@ -267,7 +267,7 @@ M9: UI, dashboard, README, demo readiness
 |---|---|---|
 | M0 | Partial complete | Workspace, shared schemas, static checks, build/test/e2e scripts, and health check are implemented. Health intentionally fails for missing live credentials. |
 | M1 | Source scaffolded | Three Solidity contract source files exist, including `refundExpired`; deployment and full contract tests are not complete. |
-| M2 | Minimal scanner path implemented | Hedera SDK HCS/HFS helpers and `demo:seed` exist. Real testnet transaction submission is blocked until `HEDERA_OPERATOR_ID` and `HEDERA_OPERATOR_KEY` are configured. |
+| M2 | Minimal scanner path complete | Hedera SDK HCS/HFS helpers and `demo:seed` exist. Live HCS topic `0.0.9226268`, HFS manifest `0.0.9226269`, and API order audit transaction `0.0.9186037@1781386460.953715803` are visible on Hedera Testnet. |
 | M3 | Partial complete | ProofRouter service and tool registry exist; full MCP protocol client validation remains open. |
 | M4 | Not started | Dynamic/x402 escrow funding remains blocked by missing credentials and integration work. |
 | M5 | Not started | Real zkTLS verifier remains blocked by verifier provider configuration. |
@@ -282,8 +282,9 @@ Current verification:
 pnpm build      PASS
 pnpm test       PASS
 pnpm test:e2e   PASS
-pnpm demo:judge PASS with real OpenAI call and Hedera audit blocked
-pnpm demo:health FAIL until Hedera/P0 credentials are configured
+pnpm demo:seed  PASS with real Hedera Testnet HCS activity
+pnpm demo:judge PASS with real OpenAI call and Hedera HCS audit
+pnpm demo:health FAIL for full P0, with minimalDemo.ready=true
 ```
 
 ---
