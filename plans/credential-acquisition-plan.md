@@ -16,6 +16,7 @@ Tasks Codex can still do without authenticated browser control:
 - [x] Verify public HashScan links after Hedera transactions are submitted.
 - [x] Look up public docs and update repo plans.
 - [x] Run `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm build`, and `pnpm test`.
+- [x] Run MCP protocol smoke tests for the local `proofrouter-mcp` stdio server.
 - [ ] After credentials are pasted into `.env`, run health/build/test and continue implementation.
 
 Tasks for the separate browser/login session:

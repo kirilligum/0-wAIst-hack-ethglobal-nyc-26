@@ -21,6 +21,7 @@ Current branch: `codex/full-p0-continuation`
 - [x] Shared schemas for offers, orders, receipts, tools, traces, and prompt history.
 - [x] Shared hash, redaction, and AES-GCM local encryption helpers.
 - [x] ProofRouter service with one shared `executeInferenceOrder` workflow for Quick Buy and Router Agent.
+- [x] ProofRouter MCP stdio server using the official MCP TypeScript SDK, with real protocol smoke coverage.
 - [x] Seeded Alpha/Beta/Gamma seller offers.
 - [x] Quick Buy deterministic cheapest compatible seller selection.
 - [x] Router Agent selection through a real OpenAI LLM call when `mode=router-agent`.
@@ -36,7 +37,7 @@ Current branch: `codex/full-p0-continuation`
 - [x] Frontend/API Hedera action readiness for INF, contracts, x402 escrow, refund schedule, and batch settlement.
 - [x] Hedera SDK helper to create a scheduled transaction targeting `ProofEscrow.refundExpired(orderId)`.
 - [x] Hedera SDK helper to build/submit a native batch containing `ProofEscrow.settle` and a hash-only HCS receipt message.
-- [x] Demo scripts: `pnpm demo:deploy`, `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm test:e2e`.
+- [x] Demo scripts: `pnpm demo:deploy`, `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm test:e2e`, `pnpm mcp`.
 - [x] Solidity contract source for `ProxyRegistry`, `ProofEscrow`, and `VerifierRegistry`, including INF locking, verifier-gated settlement, and only `refundExpired` for timeout.
 
 ### Verified

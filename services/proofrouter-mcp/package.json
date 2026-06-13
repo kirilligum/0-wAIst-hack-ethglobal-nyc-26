@@ -14,12 +14,14 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "mkdir -p ../../.local/tmp && TMPDIR=../../.local/tmp tsx watch src/http.ts",
+    "mcp": "mkdir -p ../../.local/tmp && TMPDIR=../../.local/tmp tsx src/mcp.ts",
     "start": "node dist/http.js"
   },
   "dependencies": {
     "@0waist/crypto": "workspace:*",
     "@0waist/hedera": "workspace:*",
     "@0waist/schemas": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",

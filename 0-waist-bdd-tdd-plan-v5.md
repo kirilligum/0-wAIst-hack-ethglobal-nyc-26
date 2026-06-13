@@ -268,7 +268,7 @@ M9: UI, dashboard, README, demo readiness
 | M0 | Partial complete | Workspace, shared schemas, static checks, build/test/e2e scripts, and health check are implemented. Health intentionally fails for missing live credentials. |
 | M1 | Partial complete | Contract source now compiles and implements INF locking, approved-verifier settlement, unused-INF refund, and the single `refundExpired` timeout entrypoint. Live deployments exist: `ProxyRegistry` `0.0.9226646`, `ProofEscrow` `0.0.9226648`, `VerifierRegistry` `0.0.9226643`. Runtime contract call tests remain open. |
 | M2 | Partial complete | Hedera SDK HCS/HFS/HTS helpers exist. Live HCS topic `0.0.9226268`, HFS manifest `0.0.9226269`, HTS `INF` token `0.0.9226625`, and refreshed manifest transaction `0.0.9186037@1781389738.626703938` are visible on Hedera Testnet. Buyer/seller wallet association and funding remain blocked by wallet credentials. |
-| M3 | Partial complete | ProofRouter service and tool registry exist; full MCP protocol client validation remains open. |
+| M3 | Partial complete | ProofRouter HTTP service, tool registry, and official MCP stdio server exist. MCP client smoke coverage lists and calls tools over the protocol. Live payment/proof tools still return blocked states until credentials are configured. |
 | M4 | Not started | Dynamic/x402 escrow funding remains blocked by missing credentials and integration work. |
 | M5 | Not started | Real zkTLS verifier remains blocked by verifier provider configuration. |
 | M6 | Partial complete | SDK helper builds and can submit a Hedera Scheduled Transaction targeting `ProofEscrow.refundExpired(orderId)`. Live execution remains blocked until a real funded order exists. |
@@ -287,6 +287,7 @@ pnpm demo:seed  PASS with real Hedera Testnet HCS activity and HFS manifest refr
 pnpm demo:judge PASS with real OpenAI call and Hedera HCS audit
 pnpm demo:health FAIL for full P0, with minimalDemo.ready=true and scheduled/batch prerequisites ready
 curl /api/hedera-actions PASS locally; x402 order open remains blocked by Dynamic and x402 facilitator credentials
+MCP stdio smoke PASS; client lists and calls `proofrouter.list_proxy_offers`
 ```
 
 ---

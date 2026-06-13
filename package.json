@@ -7,6 +7,7 @@
   "scripts": {
     "build": "pnpm --filter @0waist/schemas build && pnpm --filter @0waist/crypto build && pnpm --filter @0waist/hedera build && pnpm --filter @0waist/proofrouter-mcp build && pnpm --filter @0waist/web build",
     "dev": "concurrently -k -n api,web -c cyan,magenta \"pnpm --filter @0waist/proofrouter-mcp dev\" \"pnpm --filter @0waist/web dev\"",
+    "mcp": "pnpm --filter @0waist/proofrouter-mcp mcp",
     "test": "vitest run && pnpm static-check",
     "test:e2e": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/e2e.ts",
     "static-check": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/staticCheck.ts",

@@ -8,6 +8,7 @@ Implemented now:
 
 - Vite React frontend for Quick Buy and Router Agent.
 - ProofRouter service with one shared execution workflow.
+- ProofRouter MCP stdio server with protocol smoke coverage.
 - Real OpenAI Responses API calls from the server.
 - Hedera Testnet HCS audit transaction submission when operator credentials and an audit topic are configured.
 - Hedera Testnet HTS `INF` token plus deployed `ProxyRegistry`, `ProofEscrow`, and `VerifierRegistry` contracts.
@@ -99,6 +100,7 @@ pnpm test:e2e
 pnpm demo:deploy
 pnpm demo:seed
 pnpm demo:health
+pnpm mcp
 ```
 
 `pnpm demo:health` reports two levels:
