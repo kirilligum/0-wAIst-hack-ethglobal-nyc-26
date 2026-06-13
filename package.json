@@ -12,6 +12,7 @@
     "test:e2e": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/e2e.ts",
     "static-check": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/staticCheck.ts",
     "demo:deploy": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/deployHedera.ts",
+    "demo:verifier": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/verifier.ts",
     "demo:seed": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/seed.ts",
     "demo:judge": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/runJudgeMode.ts",
     "demo:health": "mkdir -p .local/tmp && TMPDIR=$PWD/.local/tmp tsx demo/healthcheck.ts"

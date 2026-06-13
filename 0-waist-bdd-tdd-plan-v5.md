@@ -270,7 +270,7 @@ M9: UI, dashboard, README, demo readiness
 | M2 | Partial complete | Hedera SDK HCS/HFS/HTS helpers exist. Live HCS topic `0.0.9226268`, HFS manifest `0.0.9226269`, HTS `INF` token `0.0.9226625`, and refreshed manifest transaction `0.0.9186037@1781389738.626703938` are visible on Hedera Testnet. Buyer/seller wallet association and funding remain blocked by wallet credentials. |
 | M3 | Partial complete | ProofRouter HTTP service, tool registry, and official MCP stdio server exist. MCP client smoke coverage lists and calls tools over the protocol. Live payment/proof tools still return blocked states until credentials are configured. |
 | M4 | Not started | Dynamic/x402 escrow funding remains blocked by missing credentials and integration work. |
-| M5 | Not started | Real zkTLS verifier remains blocked by verifier provider configuration. |
+| M5 | Partial complete | Local verifier EVM signer is generated in ignored `.env` and approved in the live `VerifierRegistry`; real zkTLS provider verification remains blocked by provider credentials/policy. |
 | M6 | Partial complete | SDK helper builds and can submit a Hedera Scheduled Transaction targeting `ProofEscrow.refundExpired(orderId)`. Live execution remains blocked until a real funded order exists. |
 | M7 | Partial complete | SDK helper ABI-encodes `ProofEscrow.settle`, builds a native Hedera `BatchTransaction` with an HCS receipt message, and exposes readiness in the API/UI. Live execution remains blocked until a real zkTLS verified receipt exists. |
 | M8 | Partial complete | Encrypted prompt-history summaries and Router Agent LLM decision path exist. |
@@ -283,6 +283,7 @@ pnpm build      PASS
 pnpm test       PASS
 pnpm test:e2e   PASS
 pnpm demo:deploy PASS with live HTS INF and contract deployments
+pnpm demo:verifier PASS with live VerifierRegistry approval
 pnpm demo:seed  PASS with real Hedera Testnet HCS activity and HFS manifest refresh
 pnpm demo:judge PASS with real OpenAI call and Hedera HCS audit
 pnpm demo:health FAIL for full P0, with minimalDemo.ready=true and scheduled/batch prerequisites ready

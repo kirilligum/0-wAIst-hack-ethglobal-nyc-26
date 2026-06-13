@@ -31,13 +31,14 @@ Current branch: `codex/full-p0-continuation`
 - [x] Live Hedera Testnet HFS market manifest `0.0.9226269`.
 - [x] Live Hedera Testnet HTS `INF` token `0.0.9226625`.
 - [x] Live Hedera Testnet contracts: `ProxyRegistry` `0.0.9226646`, `ProofEscrow` `0.0.9226648`, `VerifierRegistry` `0.0.9226643`.
+- [x] Local verifier EVM signer generated into ignored `.env` and approved in live `VerifierRegistry`; approval transaction `0.0.9186037@1781391308.700334793`.
 - [x] Live API order audit transaction visible on HashScan: `0.0.9186037@1781386460.953715803`.
 - [x] Live HFS manifest refresh transaction visible on HashScan: `0.0.9186037@1781389738.626703938`.
 - [x] Minimal Vite frontend showing prompt input, mode, budget, selected route, proof/payment status, answer, seller candidates, timeline, and HashScan action.
 - [x] Frontend/API Hedera action readiness for INF, contracts, x402 escrow, refund schedule, and batch settlement.
 - [x] Hedera SDK helper to create a scheduled transaction targeting `ProofEscrow.refundExpired(orderId)`.
 - [x] Hedera SDK helper to build/submit a native batch containing `ProofEscrow.settle` and a hash-only HCS receipt message.
-- [x] Demo scripts: `pnpm demo:deploy`, `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm test:e2e`, `pnpm mcp`.
+- [x] Demo scripts: `pnpm demo:deploy`, `pnpm demo:verifier`, `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm test:e2e`, `pnpm mcp`.
 - [x] Solidity contract source for `ProxyRegistry`, `ProofEscrow`, and `VerifierRegistry`, including INF locking, verifier-gated settlement, and only `refundExpired` for timeout.
 
 ### Verified
@@ -67,6 +68,7 @@ Current branch: `codex/full-p0-continuation`
 - [ ] Dynamic wallet login/delegated policy.
 - [ ] Hedera x402 INF escrow funding.
 - [ ] Real zkTLS verifier integration.
+- [ ] Real zkTLS provider proof policy wired to the approved verifier signer.
 - [ ] Scheduled refund execution for a real funded order.
 - [ ] Native Hedera batch settlement execution plus HCS receipt for a real verified receipt.
 - [ ] Hedera Agent Kit action wiring.

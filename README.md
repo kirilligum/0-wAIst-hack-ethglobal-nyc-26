@@ -25,8 +25,10 @@ Live Hedera Testnet demo artifacts:
 - ProxyRegistry: `0.0.9226646`
 - ProofEscrow: `0.0.9226648`
 - VerifierRegistry: `0.0.9226643`
+- Approved verifier signer: `0xE4c0e0e7a00B6f9Cd64F177222CFC5fe010C8430`
 - Latest frontend/API-equivalent order audit: [HashScan transaction](https://hashscan.io/testnet/transaction/0.0.9186037%401781386460.953715803)
 - Latest manifest refresh: [HashScan transaction](https://hashscan.io/testnet/transaction/0.0.9186037%401781389738.626703938)
+- Latest verifier approval: [HashScan transaction](https://hashscan.io/testnet/transaction/0.0.9186037%401781391308.700334793)
 - Latest seed audit sequence: `6`
 
 The minimal scanner demo requires:
@@ -98,6 +100,7 @@ pnpm build
 pnpm test
 pnpm test:e2e
 pnpm demo:deploy
+pnpm demo:verifier
 pnpm demo:seed
 pnpm demo:health
 pnpm mcp

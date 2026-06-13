@@ -180,16 +180,16 @@ If using TLSNotary instead of Reclaim, put the verifier/notary server URL into `
 
 ## 5. Verifier Signer
 
-This does not require a browser account unless we choose a managed signing service.
+Status: completed locally in the implementation session.
 
-Default plan:
+Completed path:
 
-1. Let Codex generate a local verifier ECDSA keypair.
-2. Store the private key only in `.env`.
-3. Store the public address in `.env`.
-4. Approve that address in `VerifierRegistry`.
+1. Codex generated a local verifier ECDSA keypair.
+2. The private key was stored only in ignored `.env`.
+3. The public address was stored in `.env`.
+4. The public address was approved in `VerifierRegistry`.
 
-Put this into `.env` after generation:
+Keep these in `.env`:
 
 ```bash
 VERIFIER_SIGNER_ADDRESS=
