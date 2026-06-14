@@ -17,6 +17,8 @@ import {
   ApproveInfAllowanceResult,
   createRefundSchedule,
   createOrder,
+  EnsResolution,
+  fetchEnsResolution,
   fetchHederaActionStatus,
   fetchInfWalletDiagnostics,
   fetchOffers,
@@ -42,6 +44,12 @@ function money(value: number): string {
 function modeLabel(mode: OrderMode): string {
   return mode === "quick-buy" ? "Quick Buy" : "Router Agent";
 }
+
+function shortAddress(address?: string): string {
+  return address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "";
+}
+
+const demoSellerEnsName = import.meta.env.VITE_DEMO_SELLER_ENS_NAME ?? "ethglobal.eth";
 
 export default function App({ dynamicConfigured }: AppProps) {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -74,6 +82,7 @@ export default function App({ dynamicConfigured }: AppProps) {
   const [allowanceLoading, setAllowanceLoading] = useState(false);
   const [allowanceResult, setAllowanceResult] = useState<ApproveInfAllowanceResult | null>(null);
   const [allowanceError, setAllowanceError] = useState<string | null>(null);
+  const [ensResolutions, setEnsResolutions] = useState<Record<string, EnsResolution>>({});
   const [sellerForm, setSellerForm] = useState({
     sellerId: "local-seller",
     displayName: "Local Seller Proxy",
@@ -88,6 +97,7 @@ export default function App({ dynamicConfigured }: AppProps) {
     x402Endpoint: "http://localhost:8790/x402",
     hederaAccount: "",
     sellerEvmAddress: "",
+    sellerEnsName: demoSellerEnsName,
     summary: "Local seller proxy registered for the live Hedera demo.",
     publishOnChain: true
   });
@@ -104,6 +114,41 @@ export default function App({ dynamicConfigured }: AppProps) {
       .catch(() => setInfWallets(null));
   }, []);
 
+  useEffect(() => {
+    const names = [...new Set(offers.map((offer) => offer.sellerEnsName).filter((name): name is string => Boolean(name)))];
+    if (names.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+    void Promise.all(names.map(async (name) => {
+      try {
+        return [name, await fetchEnsResolution(name)] as const;
+      } catch (error) {
+        return [name, {
+          status: "blocked",
+          name,
+          network: "sepolia",
+          chainId: 11155111,
+          source: "ethereum-sepolia",
+          message: error instanceof Error ? error.message : "ENS lookup failed"
+        } satisfies EnsResolution] as const;
+      }
+    })).then((entries) => {
+      if (cancelled) {
+        return;
+      }
+      setEnsResolutions((current) => ({
+        ...current,
+        ...Object.fromEntries(entries)
+      }));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [offers]);
+
   const selectedSeller = useMemo(() => {
     if (!result) return null;
     return offers.find((offer) => offer.offerId === result.selectedOffer.offerId) ?? result.selectedOffer;
@@ -111,6 +156,9 @@ export default function App({ dynamicConfigured }: AppProps) {
   const selectedRegistryOfferId = selectedSeller?.registryOfferId && /^\d+$/.test(selectedSeller.registryOfferId)
     ? Number(selectedSeller.registryOfferId)
     : null;
+  const selectedEns = selectedSeller?.sellerEnsName ? ensResolutions[selectedSeller.sellerEnsName] : undefined;
+  const featuredSeller = offers.find((offer) => offer.sellerEnsName) ?? null;
+  const featuredEns = featuredSeller?.sellerEnsName ? ensResolutions[featuredSeller.sellerEnsName] : undefined;
   const verificationMode = hederaActions?.prerequisites.creProof.mode;
   const verifierLabel = verificationMode === "local-verifier-placeholder" ? "Local verifier" : "CRE proof";
   const reportLabel = verificationMode === "local-verifier-placeholder" ? "Receipt" : "CRE report";
@@ -160,6 +208,7 @@ export default function App({ dynamicConfigured }: AppProps) {
       const next = await registerSeller({
         ...sellerForm,
         sellerEvmAddress: sellerForm.sellerEvmAddress.trim() || undefined,
+        sellerEnsName: sellerForm.sellerEnsName.trim() || undefined,
         hederaAccount: sellerForm.hederaAccount.trim()
       });
       setSellerResult(next);
@@ -411,6 +460,29 @@ export default function App({ dynamicConfigured }: AppProps) {
           </section>
         ) : null}
 
+        {featuredSeller?.sellerEnsName ? (
+          <section className="seller-identity-strip">
+            <div>
+              <span>Seller Sepolia ENS</span>
+              <strong>{featuredSeller.sellerEnsName}</strong>
+            </div>
+            <div>
+              <span>Registry seller</span>
+              <strong>{featuredSeller.displayName}</strong>
+            </div>
+            <div>
+              <span>Live resolver</span>
+              <strong>
+                {featuredEns?.address ? shortAddress(featuredEns.address) : (featuredEns?.status ?? "resolving")}
+              </strong>
+            </div>
+            <div>
+              <span>Network</span>
+              <strong>Sepolia testnet</strong>
+            </div>
+          </section>
+        ) : null}
+
         <section className="setup-strip">
           <div>
             <strong>Seller onboarding</strong>
@@ -437,6 +509,14 @@ export default function App({ dynamicConfigured }: AppProps) {
                 <input
                   value={sellerForm.displayName}
                   onChange={(event) => setSellerForm((value) => ({ ...value, displayName: event.target.value }))}
+                />
+              </label>
+              <label className="field">
+                  <span>Sepolia ENS</span>
+                <input
+                  placeholder="seller.eth"
+                  value={sellerForm.sellerEnsName}
+                  onChange={(event) => setSellerForm((value) => ({ ...value, sellerEnsName: event.target.value }))}
                 />
               </label>
               <label className="field">
@@ -632,6 +712,8 @@ export default function App({ dynamicConfigured }: AppProps) {
               <div>
                 <span>Route</span>
                 <strong>{selectedSeller?.displayName ?? "Waiting"}</strong>
+                {selectedSeller?.sellerEnsName ? <span className="ens-name">{selectedSeller.sellerEnsName}</span> : null}
+                {selectedEns?.address ? <span className="ens-live">Sepolia ENS live {shortAddress(selectedEns.address)}</span> : null}
               </div>
               <div>
                 <span>Proof</span>
@@ -743,19 +825,37 @@ export default function App({ dynamicConfigured }: AppProps) {
             Sellers
           </div>
           <div className="seller-grid">
-            {offers.map((offer) => (
-              <article
-                key={offer.offerId}
-                className={selectedSeller?.offerId === offer.offerId ? "seller selected" : "seller"}
-              >
-                <div>
-                  <h3>{offer.displayName}</h3>
-                  <p>{offer.summary}</p>
-                  <span className={`registry-badge ${offer.registryStatus}`}>{offer.registryStatus}</span>
-                </div>
-                <strong>{money(offer.fixedFeeInf)}</strong>
-              </article>
-            ))}
+            {offers.map((offer) => {
+              const ens = offer.sellerEnsName ? ensResolutions[offer.sellerEnsName] : undefined;
+              return (
+                <article
+                  key={offer.offerId}
+                  className={selectedSeller?.offerId === offer.offerId ? "seller selected" : "seller"}
+                >
+                  <div>
+                    <div className="seller-heading">
+                      {ens?.avatarUrl ? <img className="ens-avatar" src={ens.avatarUrl} alt="" /> : null}
+                      <h3>{offer.displayName}</h3>
+                    </div>
+                    {offer.sellerEnsName ? (
+                      <div className="ens-row">
+                        <span className={ens?.status === "resolved" ? "ens-badge resolved" : "ens-badge"}>
+                          {offer.sellerEnsName}
+                        </span>
+                        {ens?.address ? (
+                          <span className="ens-live">Sepolia live {shortAddress(ens.address)}</span>
+                        ) : (
+                          <span className="ens-live pending">{ens?.status ?? "resolving"}</span>
+                        )}
+                      </div>
+                    ) : null}
+                    <p>{offer.summary}</p>
+                    <span className={`registry-badge ${offer.registryStatus}`}>{offer.registryStatus}</span>
+                  </div>
+                  <strong>{money(offer.fixedFeeInf)}</strong>
+                </article>
+              );
+            })}
           </div>
         </section>
 

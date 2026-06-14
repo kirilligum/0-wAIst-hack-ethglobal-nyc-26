@@ -311,7 +311,7 @@ M9: UI, dashboard, README, demo readiness
 | M6 | Partial complete | SDK helper builds and submits a Hedera Scheduled Transaction targeting `ProofEscrow.refundExpired(orderId)`. Live schedule creation is proven for funded escrow order `1`: schedule `0.0.9229938`, tx `0.0.9186037@1781421835.290442554`. Scheduled execution after expiry remains open. |
 | M7 | Partial complete | SDK helper ABI-encodes `ProofEscrow.settle`, builds a native Hedera `BatchTransaction` with an HCS receipt message, and exposes readiness in the API/UI for the placeholder demo path. Current CRE discovery says Hedera direct workflow support is false, so trusted live settlement is deferred to the Sepolia CRE settlement plus Hedera audit plan. |
 | M8 | Partial complete | Encrypted prompt-history summaries and Router Agent LLM decision path exist. |
-| M9 | Partial complete | Frontend, README, and demo scripts exist; dashboard is folded into the first UI for the minimal demo. UI now exposes seller onboarding, `ProofEscrow.openOrder` escrow preparation for registry-backed offers, INF wallet diagnostics, and guarded INF allowance approval. Hedera Agent Kit package/core plugin readiness is wired through `@hashgraph/hedera-agent-kit`. |
+| M9 | Partial complete | Frontend, README, and demo scripts exist; dashboard is folded into the first UI for the minimal demo. UI now exposes seller onboarding, seller-only Sepolia ENS alias metadata, `ProofEscrow.openOrder` escrow preparation for registry-backed offers, INF wallet diagnostics, and guarded INF allowance approval. Hedera Agent Kit package/core plugin readiness is wired through `@hashgraph/hedera-agent-kit`. |
 
 Current verification:
 
@@ -795,6 +795,7 @@ Status:
 - [x] Seller proxy now rejects a bare order id and requires structured escrow evidence headers for order id, request hash, ProofEscrow target, network, and `INF`.
 - [x] LiteLLM-compatible upstream path uses `LITELLM_BASE_URL`/`LITELLM_API_KEY`; OpenAI direct path is available when seller uses `OPENAI_API_KEY`.
 - [x] Seller publication path added to API, MCP, frontend, and `pnpm demo:seller`.
+- [x] Seller Sepolia ENS alias metadata and live Sepolia resolver status added to shared offers, seller onboarding, MCP publication, demo env, UI, and HFS market manifest payloads; buyer ENS is intentionally out of scope.
 - [x] Live `ProxyRegistry.publishOffer` transaction succeeded for `registryOfferId=1`.
 - [ ] Seller-node escrow confirmation still needs real funded `ProofEscrow` order lookup before serving in full P0 mode.
 - [ ] `runVerifiedInference`, compact zkTLS proof generation, and CRE submission remain blocked until zkTLS provider policy/credentials and CRE workflow configuration are ready.

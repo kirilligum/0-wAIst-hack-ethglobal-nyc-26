@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import express, { type Express } from "express";
 import { getInfWalletDiagnostics } from "@0waist/hedera";
 import { OrderRequestSchema } from "@0waist/schemas";
+import { resolveEnsName } from "./ens.js";
 import { errorResponse } from "./errors.js";
 import { approveInfAllowanceForBuyer } from "./infAllowance.js";
 import { createLocalVerifierReceipt } from "./localVerifier.js";
@@ -96,6 +97,16 @@ export function createApp(): Express {
 
   app.get("/api/offers", (_request, response) => {
     response.json({ offers: listProxyOffers() });
+  });
+
+  app.get("/api/ens/resolve", async (request, response) => {
+    try {
+      const name = String(request.query.name ?? "");
+      response.json(await resolveEnsName(name));
+    } catch (error) {
+      const { statusCode, body } = errorResponse(error);
+      response.status(statusCode).json(body);
+    }
   });
 
   app.post("/api/seller/register", async (request, response) => {

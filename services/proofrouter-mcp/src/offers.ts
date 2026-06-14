@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { z } from "zod";
 import { Offer, OfferListSchema, OfferSchema } from "@0waist/schemas";
+import { demoSellerEnsName } from "./ens.js";
 
 export const SEEDED_OFFERS: Offer[] = OfferListSchema.parse([
   {
@@ -93,8 +94,23 @@ function mergeOffers(offers: Offer[]): Offer[] {
   return [...byId.values()];
 }
 
+function withDemoSellerEns(offer: Offer, env: NodeJS.ProcessEnv): Offer {
+  if (offer.sellerEnsName) {
+    return offer;
+  }
+  const localSellerId = env.SELLER_ID ?? "local-seller";
+  if (offer.sellerId !== localSellerId && !offer.offerId.startsWith("registry-")) {
+    return offer;
+  }
+  return {
+    ...offer,
+    sellerEnsName: demoSellerEnsName(env)
+  };
+}
+
 export function listProxyOffers(env: NodeJS.ProcessEnv = process.env): Offer[] {
-  return OfferListSchema.parse(mergeOffers([...SEEDED_OFFERS, ...readRegisteredOffers(env)]));
+  return OfferListSchema.parse(mergeOffers([...SEEDED_OFFERS, ...readRegisteredOffers(env)])
+    .map((offer) => withDemoSellerEns(offer, env)));
 }
 
 export async function upsertRegisteredOffer(
