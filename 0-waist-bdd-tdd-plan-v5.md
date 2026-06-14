@@ -10,22 +10,25 @@
 
 ```text
 1A: Live scheduled refund execution in P0.
-2A: Native Hedera batch settlement in P0.
+2A: One P0 settlement shell after the Chainlink CRE chain-support gate.
 3A: HTS INF token for P0 escrow and Quick Buy.
-4A: Real zkTLS mandatory in P0.
+4A: Real zkTLS mandatory in P0, verified only by a deployed Chainlink CRE workflow.
 5A: Full Hedera x402 Quick Buy in P0.
 6A: Live Dynamic/Fireblocks wallet in P0.
 7A: Real MCP server in P0.
 8A: Local encrypted prompt-history viewer with summaries and redaction controls in P0.
+9A: Chainlink CRE is the only trusted zkTLS verification authority for P0 settlement.
 ```
 
 All inference orders must use the same product path:
 
 ```text
-seller selected -> x402 funds ProofEscrow with INF -> scheduled refund created -> seller proxy call -> real zkTLS -> Hedera Batch settle + HCS audit
+seller selected -> x402 funds ProofEscrow with INF -> scheduled refund created -> seller proxy call -> compact zkTLS proof submitted to Chainlink CRE -> CRE DON verifies proof -> CRE report settles or authorizes ProofEscrow -> HCS audit logs CRE report hash and settlement tx
 ```
 
 Quick Buy and Router Agent differ only in seller selection.
+
+`CRE_CHAIN_SUPPORT_GATE` must run before coding final settlement. If Chainlink CRE EVM report writes support the target chain, use direct CRE report settlement. If Hedera Testnet is not supported for direct CRE writes, choose one alternate shell before implementation: either a CRE-supported settlement receiver chain, or a CRE-verified receipt registry that authorizes native Hedera Batch settlement. Do not keep both settlement shells live.
 
 ---
 
@@ -56,6 +59,22 @@ demoVerifier
 stubVerifier
 fakeProof
 mockVerifier
+LocalVerifier
+VerifierService in non-CRE product path
+services/verifier in product path
+localVerifier
+verifierPrivateKey
+signReceipt outside cre/
+approveVerifier
+revokeVerifier
+isVerifier
+approveLocalVerifier
+submitLocalReceipt
+nonCreVerifier
+nonCreReceipt
+creFallback
+CRE_SIMULATION_ONLY
+creSimulationTrusted
 VERIFIER_MODE
 MockVerifierService in non-test files
 ERC8004AgentRegistryLite
@@ -70,7 +89,10 @@ HFS_GAMMA_MANIFEST_FILE_ID
 Allowed:
 
 ```text
-mock verifier signer in contract unit tests
+mock CRE report in isolated contract unit tests
+CRE workflow simulation tests that cannot satisfy trusted demo acceptance
+CRE local trigger tests that cannot satisfy trusted demo acceptance
+CRE report fixtures in tests
 mock external client in isolated unit tests
 one HCS audit topic with typed messages
 one HFS market manifest file
@@ -93,8 +115,8 @@ explicit clients at external boundaries
     proof-escrow.feature
     hedera-primitives.feature
     scheduled-refund.feature
-    batch-settlement.feature
-    real-zktls.feature
+    cre-zktls-verifier.feature
+    cre-report-settlement.feature
     dynamic-wallet.feature
     mcp-tools.feature
     prompt-history.feature
@@ -129,13 +151,21 @@ explicit clients at external boundaries
   contracts/
     src/ProxyRegistry.sol
     src/ProofEscrow.sol
-    src/VerifierRegistry.sol
+    src/CreReportReceiver.sol
     test/*.test.ts
+
+  cre/
+    zktls-verifier/
+      project.yaml
+      workflow.yaml
+      package.json
+      tsconfig.json
+      main.ts
+      src/
 
   services/
     proofrouter-mcp/
     seller-node/
-    verifier/
 
   apps/
     web/
@@ -194,8 +224,10 @@ This function owns:
 x402 escrow funding
 scheduled refund creation
 seller proxy call
-zkTLS wait
-batch settle + HCS log
+submit compact zkTLS proof to CRE
+wait for CRE report
+settle or authorize settlement from CRE report
+HCS CRE audit log
 trace writing
 ```
 
@@ -208,7 +240,7 @@ seller proxy request is blocked until ProofEscrow order is funded with INF
 ### Invariant 5: no settlement before real proof
 
 ```text
-batch_settle_and_log is blocked until real zkTLS receipt exists and verifies against order hashes
+settleFromCreReport, or the selected CRE-authorized Hedera Batch path, is blocked until a deployed Chainlink CRE workflow produces a report that binds orderId, requestHash, responseHash, model, token usage, provider endpoint, and proof policy hash.
 ```
 
 ### Invariant 6: one timeout function
@@ -240,11 +272,11 @@ dashboard
 Dynamic policy trace
 openOrder tx
 scheduled refund tx
-batch settlement tx
+selected settlement tx
 HCS audit message
 HFS manifest context
 local traces
-zkTLS receipt
+CRE report
 ```
 
 ---
@@ -259,9 +291,9 @@ M1: Contracts and INF escrow semantics
 M2: Hedera primitives: HTS, one HCS topic, one HFS manifest, Mirror helper, guardrails
 M3: Real MCP server and shared execution workflow
 M4: Dynamic + full x402 escrow funding
-M5: Seller node and real zkTLS verifier
+M5: Seller node and Chainlink CRE zkTLS verifier workflow
 M6: Scheduled refund execution
-M7: Native batch settlement + HCS audit
+M7: CRE report settlement + HCS audit
 M8: Router Agent context and encrypted prompt history
 M9: UI, dashboard, README, demo readiness
 ```
@@ -271,13 +303,13 @@ M9: UI, dashboard, README, demo readiness
 | Milestone | Status | Notes |
 |---|---|---|
 | M0 | Partial complete | Workspace, shared schemas, static checks, build/test/e2e scripts, and health check are implemented. Health intentionally fails for missing live credentials. |
-| M1 | Partial complete | Contract source now compiles and implements INF locking, approved-verifier settlement, unused-INF refund, and the single `refundExpired` timeout entrypoint. Live deployments exist: `ProxyRegistry` `0.0.9226646`, `ProofEscrow` `0.0.9226648`, `VerifierRegistry` `0.0.9226643`. Runtime contract call tests remain open. |
+| M1 | Partial complete | Contract source now compiles and implements INF locking, approved-verifier settlement, unused-INF refund, and the single `refundExpired` timeout entrypoint. Live deployments exist: `ProxyRegistry` `0.0.9226646`, `ProofEscrow` `0.0.9226648`, `VerifierRegistry` `0.0.9226643`. The approved-verifier contract path is now marked as legacy demo scaffolding to be replaced by CRE report receiver/registry semantics. Runtime contract call tests remain open. |
 | M2 | Partial complete | Hedera SDK HCS/HFS/HTS helpers exist. Live HCS topic `0.0.9226268`, HFS manifest `0.0.9226269`, HTS `INF` token `0.0.9226625`, and refreshed manifest transaction `0.0.9186037@1781389738.626703938` are visible on Hedera Testnet. Buyer/seller wallet association and funding remain blocked by wallet credentials. |
 | M3 | Partial complete | ProofRouter HTTP service, tool registry, and official MCP stdio server exist. MCP client smoke coverage lists and calls tools over the protocol. `proofrouter.publish_seller_offer` now uses the shared seller registration handler. Live payment/proof tools still return blocked states until credentials are configured. |
 | M4 | Not started | Dynamic/x402 escrow funding remains blocked by missing credentials and integration work. |
-| M5 | Partial complete | Seller-node service exists and gates `/v1/chat/completions` behind x402/escrow evidence. Local verifier EVM signer is generated in ignored `.env` and approved in the live `VerifierRegistry`; real zkTLS provider verification remains blocked by provider credentials/policy. |
+| M5 | Partial complete | Seller-node service exists and gates `/v1/chat/completions` behind x402/escrow evidence. Local verifier EVM signer is generated in ignored `.env` and approved in the live `VerifierRegistry`; this is legacy demo scaffolding only. Remaining P0 work is replacing local verifier trust with a deployed Chainlink CRE zkTLS workflow. |
 | M6 | Partial complete | SDK helper builds and can submit a Hedera Scheduled Transaction targeting `ProofEscrow.refundExpired(orderId)`. Live execution remains blocked until a real funded order exists. |
-| M7 | Partial complete | SDK helper ABI-encodes `ProofEscrow.settle`, builds a native Hedera `BatchTransaction` with an HCS receipt message, and exposes readiness in the API/UI. Live execution remains blocked until a real zkTLS verified receipt exists. |
+| M7 | Partial complete | SDK helper ABI-encodes `ProofEscrow.settle`, builds a native Hedera `BatchTransaction` with an HCS receipt message, and exposes readiness in the API/UI. This remains legacy scaffolding until `CRE_CHAIN_SUPPORT_GATE` selects direct CRE settlement or CRE-authorized Hedera Batch settlement. |
 | M8 | Partial complete | Encrypted prompt-history summaries and Router Agent LLM decision path exist. |
 | M9 | Partial complete | Frontend, README, and demo scripts exist; dashboard is folded into the first UI for the minimal demo. |
 
@@ -288,11 +320,11 @@ pnpm build      PASS
 pnpm test       PASS
 pnpm test:e2e   PASS
 pnpm demo:deploy PASS with live HTS INF and contract deployments
-pnpm demo:verifier PASS with live VerifierRegistry approval
+pnpm demo:verifier PASS with live VerifierRegistry approval as legacy demo scaffolding; not trusted P0 completion evidence
 pnpm demo:seed  PASS with real Hedera Testnet HCS activity and HFS manifest refresh
 pnpm demo:seller PASS with live ProxyRegistry seller offer transaction 0.0.9186037@1781396121.704889572
 pnpm demo:judge PASS with real OpenAI call and Hedera HCS audit
-pnpm demo:health FAIL for full P0, with minimalDemo.ready=true and scheduled/batch prerequisites ready
+pnpm demo:health FAIL for full P0, with minimalDemo.ready=true and scheduled/batch prerequisites ready; CRE workflow and chain support remain open
 curl /api/hedera-actions PASS locally; seller registry publication ready; x402 order open remains blocked by Dynamic and x402 facilitator credentials
 MCP stdio smoke PASS; client lists and calls `proofrouter.list_proxy_offers`
 ```
@@ -322,9 +354,9 @@ REQ-003 Quick Buy chooses cheapest active compatible offer
 REQ-004 Router Agent chooses from context and MCP tools without formula scoring
 REQ-005 sellers publish offers through ProxyRegistry
 REQ-006 Dynamic/x402 funds ProofEscrow with HTS INF
-REQ-007 seller proxy produces real zkTLS verifier-signed receipt
+REQ-007 deployed Chainlink CRE workflow verifies zkTLS proof and produces the only trusted report accepted by settlement
 REQ-008 live scheduled transaction targets refundExpired(orderId)
-REQ-009 one native Hedera batch contains settle plus HCS receipt
+REQ-009 one settlement shell is selected after `CRE_CHAIN_SUPPORT_GATE`: direct CRE report settlement, or CRE-authorized Hedera Batch settlement
 REQ-010 UI includes clean user page and technical agent dashboard
 REQ-011 no fallback paths, duplicate paths, generic adapters, or hidden formula logic
 REQ-012 demo:health fails fast with structured missing-dependency errors
@@ -332,7 +364,8 @@ REQ-013 public artifacts never contain plaintext prompts, API keys, auth headers
 REQ-014 Router Agent uses one real ProofRouter MCP server
 REQ-015 Dynamic delegated wallet is the live buyer wallet path
 REQ-016 one HFS market manifest, one HCS audit topic, and one canonical trace format
-REQ-017 every order trace keeps consistent orderId, requestHash, responseHash, proofHash, scheduleId, batch transaction ID, and HCS sequence
+REQ-017 every order trace keeps consistent orderId, requestHash, responseHash, proofHash, scheduleId, CRE report hash, settlement transaction ID, and HCS sequence
+REQ-018 CRE workflow deployment, target DON, report receiver, gateway, chain selector, and proof/report quota gates pass before trusted demo claim
 ```
 
 ### Verification IDs to use as the command surface grows
@@ -342,9 +375,9 @@ TEST-001 static architecture and anti-debt scan
 TEST-002 core schemas and ProofEscrow contract behavior
 TEST-003 Hedera primitives and artifact resolution
 TEST-004 Dynamic x402 escrow funding
-TEST-005 real zkTLS receipt
+TEST-005 Chainlink CRE zkTLS verification
 TEST-006 live scheduled refund
-TEST-007 batch settlement and HCS receipt
+TEST-007 CRE report settlement or CRE-authorized Hedera Batch settlement with HCS receipt
 TEST-008 MCP Router Agent and encrypted prompt history
 TEST-009 canonical UI and execution E2E
 TEST-010 submission documentation static check
@@ -355,6 +388,32 @@ EVAL-003 Hedera artifact completeness reaches 100%
 ```
 
 Existing commands remain valid while the fuller command aliases are introduced. New tests should include grep-able IDs such as `// TEST-008` when practical.
+
+CRE-specific command aliases should be added only when the matching implementation exists:
+
+```text
+pnpm cre:build
+pnpm cre:simulate
+pnpm cre:deploy
+pnpm cre:trigger
+pnpm test:cre
+pnpm cre:networks
+```
+
+CRE-specific tests:
+
+```text
+TEST-CRE-001 CRE workflow builds from `cre/zktls-verifier`
+TEST-CRE-002 CRE simulation verifies a valid compact proof presentation
+TEST-CRE-003 deployed CRE workflow reports active workflowId, DON, gateway, and target
+TEST-CRE-004 wrong model is rejected by CRE verification
+TEST-CRE-005 wrong responseHash is rejected by CRE verification
+TEST-CRE-006 ProofEscrow or selected receiver accepts only a CRE-authenticated report
+TEST-CRE-007 local verifier signatures and non-CRE receipts cannot settle
+TEST-CRE-008 demo:health fails when only local CRE simulation is configured
+TEST-CRE-009 proof input and report payload stay within CRE quota gates
+TEST-CRE-010 HCS audit contains CRE report metadata and no plaintext prompt
+```
 
 ### Trace and artifact contract
 
@@ -369,12 +428,14 @@ runs/order-<orderId>/
   decision.json
   x402-escrow.json
   scheduled-refund.json
-  zktls-receipt.json
-  batch-settlement.json
+  cre-proof.redacted.json
+  cre-report.json
+  cre-settlement.json
+  hcs-cre-receipt.json
   summary.json
 ```
 
-Public trace files may include hashes, summaries, redacted excerpts, transaction IDs, schedule IDs, HCS sequence numbers, and verifier public metadata. They must not include plaintext prompts, provider API keys, auth headers, or verifier private keys.
+Public trace files may include hashes, summaries, redacted excerpts, transaction IDs, schedule IDs, HCS sequence numbers, CRE workflowId, DON identifier, report hash, report transaction ID, proof policy hash, and report receiver address/account. They must not include plaintext prompts, provider API keys, auth headers, raw TLS transcript data, or private keys.
 
 ### Evidence and ADR loop
 
@@ -382,22 +443,35 @@ Maintain `plans/execution-log.md` for bounded phase status, completed steps, qua
 
 ```text
 ADR-001 one canonical execution path
-ADR-002 real zkTLS only
+ADR-002 Chainlink CRE as the only real zkTLS verification authority
 ADR-003 HTS INF as the only P0 product asset
 ADR-004 x402 funds ProofEscrow, never direct final seller payment
 ADR-005 Dynamic delegated wallet path
 ADR-006 refundExpired(orderId) as the only timeout function
-ADR-007 batch settlement plus HCS receipt as the only settlement shell
+ADR-007 one CRE-selected settlement shell after chain-support gate
 ADR-008 one HCS audit topic and one HFS market manifest
 ADR-009 real MCP server as the only agent tool protocol
 ADR-010 Router Agent uses context and tools, not formula scoring
 ADR-011 encrypted local prompt history and hash-only public artifacts
+ADR-012 CRE network support, gateway, and proof/report quota gates
+```
+
+### Chainlink CRE plan intake — 2026-06-14
+
+Adopt the Chainlink CRE refinement as follows:
+
+```text
+CRE-only verification: accepted. Local verifier signatures, service-level receipt signing, and non-CRE proof acceptance are forbidden in the P0 product path.
+Direct CRE settlement: accepted only after `CRE_CHAIN_SUPPORT_GATE` proves the target settlement chain is supported by the CRE EVM write/report capability.
+Hedera Batch settlement: retained only as the selected fallback shell if CRE direct writes to Hedera are unsupported and a CRE-authenticated registry/receiver can cryptographically authorize the batch.
+CRE simulation: allowed for development tests, never as trusted demo or completion evidence.
+Proof packaging: use compact proof presentations or hashes where needed to stay within CRE HTTP input, observation, response, and report payload quotas.
 ```
 
 ### Useful deltas not adopted verbatim
 
 ```text
-HCS message naming: the direct plan says DECISION/SCHEDULE/RECEIPT, while the current PRD/schema already allow DECISION/RECEIPT/TIMEOUT/SETTLEMENT. Do not remove existing message types midstream; consider adding SCHEDULE as a typed alias when scheduled-refund trace work lands.
+HCS message naming: the direct plan says DECISION/SCHEDULE/RECEIPT, while the current PRD/schema already allow DECISION/RECEIPT/TIMEOUT/SETTLEMENT. Do not remove existing message types midstream; add CRE_RECEIPT for CRE report audit evidence and consider adding SCHEDULE as a typed alias when scheduled-refund trace work lands.
 Repository shape: keep the current pnpm workspace packages/services/apps layout instead of moving files into a flat src/ tree.
 Hardhat: do not add Hardhat solely because the direct plan mentions it; add it only if local Solidity runtime tests need it beyond the current solc compile coverage.
 ```
@@ -445,16 +519,16 @@ run successfully, with `demo:health` failing only for intentionally missing exte
 
 ```gherkin
 Feature: Proof-gated INF escrow
-  Scenario: Seller is paid only after a valid verifier receipt
+  Scenario: Seller is paid only after a valid CRE report
     Given a seller has published an offer
     And a buyer has funded ProofEscrow with INF through the order path
-    When the seller submits a verifier-signed receipt matching the order
+    When the selected settlement shell receives a CRE-authenticated report matching the order
     Then ProofEscrow settles INF to the seller
     And refunds unused INF to the buyer
 
-  Scenario: Wrong receipt cannot settle
+  Scenario: Wrong CRE report cannot settle
     Given an open order
-    When a receipt has the wrong modelId or responseHash
+    When a report has the wrong modelId or responseHash
     Then settle reverts
 ```
 
@@ -469,13 +543,14 @@ deactivateOffer prevents active selection by callers
 hfsManifestFileIdHash is stored
 ```
 
-### VerifierRegistry
+### CRE report receiver/registry
 
 ```text
-owner can approve verifier
-owner can revoke verifier
-isVerifier returns expected bool
-non-owner cannot mutate registry
+stores accepted CRE workflowId, DON identifier, report receiver, and proof policy hash
+rejects reports from unconfigured workflow/DON/receiver
+rejects arbitrary local verifier signatures
+does not expose approveVerifier, revokeVerifier, or isVerifier product paths
+non-owner cannot mutate CRE configuration
 ```
 
 ### ProofEscrow
@@ -483,7 +558,7 @@ non-owner cannot mutate registry
 ```text
 openOrder locks INF in escrow
 openOrder snapshots offer price
-settle verifies approved verifier signature
+settle verifies CRE report or selected CRE-authorized registry state
 settle rejects mismatched orderId/buyer/seller/hash
 settle computes payment from token counts and snapshotted price
 settle pays seller INF and refunds unused INF
@@ -528,7 +603,7 @@ product code rejects HBAR settlement asset
 
 ```text
 createOrLoadAuditTopic returns topic ID
-submitAuditMessage accepts typed DECISION/RECEIPT/TIMEOUT/SETTLEMENT messages
+submitAuditMessage accepts typed DECISION/RECEIPT/TIMEOUT/SETTLEMENT/CRE_RECEIPT messages
 submitAuditMessage rejects raw prompt/response fields
 returns sequence number
 ```
@@ -538,7 +613,7 @@ returns sequence number
 ```text
 createOrLoadMarketManifest returns file ID
 readMarketManifest validates schema
-manifest includes sellers, x402 endpoints, MCP endpoint, audit topic, proof policy, payment asset INF
+manifest includes sellers, x402 endpoints, MCP endpoint, audit topic, proof policy, payment asset INF, CRE workflowId, CRE workflow name, CRE gateway URL, CRE target, CRE chain selector name, CRE report receiver, proof policy hash, and DON identifier
 ```
 
 ### `packages/hedera/src/mirror.ts`
@@ -557,7 +632,7 @@ blocks spend above Dynamic policy
 blocks unknown contract calls
 blocks plaintext HCS message
 blocks proxy call before escrow funding
-blocks settlement before receipt
+blocks settlement before CRE report or selected CRE-authorized registry state
 ```
 
 ## Done when
@@ -593,8 +668,10 @@ proofrouter.build_context_packet
 proofrouter.open_order_via_x402
 proofrouter.create_refund_schedule
 proofrouter.call_seller_proxy
-proofrouter.wait_for_zktls_receipt
-proofrouter.batch_settle_and_log
+proofrouter.submit_proof_to_cre
+proofrouter.wait_for_cre_report
+proofrouter.settle_from_cre_report
+proofrouter.log_cre_settlement_audit
 proofrouter.get_dynamic_wallet_policy
 ```
 
@@ -648,18 +725,19 @@ Quick Buy can fund ProofEscrow through x402 with INF and receive an order ID.
 
 ---
 
-# M5. Seller node and real zkTLS verifier
+# M5. Seller node and Chainlink CRE zkTLS verifier workflow
 
 ## BDD
 
 ```gherkin
-Feature: Real zkTLS receipt
-  Scenario: Seller response is verified with real zkTLS
+Feature: Chainlink CRE zkTLS verification
+  Scenario: Seller response is verified by CRE before settlement
     Given an INF-funded ProofEscrow order exists
     When the seller proxy calls the LLM provider
-    Then the call is made through the real zkTLS client
-    And the verifier validates provider host, endpoint, model, status, tokens, response hash, and order binding
-    And the verifier signs VerifiedReceipt
+    Then the seller produces a compact zkTLS proof presentation bound to orderId, requestHash, and responseHash
+    And the proof is submitted to the deployed Chainlink CRE workflow
+    And the CRE DON validates provider host, endpoint, model, status, tokens, response hash, and order binding
+    And the CRE workflow emits the only report accepted by settlement
 ```
 
 ## TDD tasks
@@ -671,7 +749,9 @@ rejects missing escrow order
 calls shared runVerifiedInference
 binds orderId/requestHash into provider request
 redacts API key and private prompt in logs/traces
-submits proof material to verifier
+submits compact proof material to Chainlink CRE
+never calls the LLM from the CRE workflow
+never sends plaintext prompt, API key, or raw auth header to public artifacts
 ```
 
 Status:
@@ -682,25 +762,30 @@ Status:
 - [x] Seller publication path added to API, MCP, frontend, and `pnpm demo:seller`.
 - [x] Live `ProxyRegistry.publishOffer` transaction succeeded for `registryOfferId=1`.
 - [ ] Seller-node escrow confirmation still needs real funded `ProofEscrow` order lookup before serving in full P0 mode.
-- [ ] `runVerifiedInference` and real zkTLS proof submission remain blocked until zkTLS provider policy/credentials are ready.
+- [ ] `runVerifiedInference`, compact zkTLS proof generation, and CRE submission remain blocked until zkTLS provider policy/credentials and CRE workflow configuration are ready.
 
-### Verifier
+### CRE zkTLS workflow
 
 ```text
+builds from `cre/zktls-verifier`
+simulates locally for development only
+deploys to a real CRE DON before trusted demo acceptance
 verifies TLS proof origin
 verifies endpoint
 verifies model
 verifies token usage fields
 verifies responseHash
-signs VerifiedReceipt
+verifies orderId/requestHash binding
+emits CRE report with workflowId, donId, proofHash, requestHash, responseHash, token usage, and model
 rejects wrong model
 rejects wrong response hash
 rejects unverified proof
+rejects oversized proof input/report payloads
 ```
 
 ## Done when
 
-No P0 settlement can occur without real verifier output.
+No P0 settlement can occur without a report from the configured deployed Chainlink CRE workflow. Local CRE simulation may pass tests, but cannot satisfy trusted demo completion.
 
 ---
 
@@ -734,34 +819,39 @@ The timeout path is demonstrated through real scheduled execution, or P0 fails.
 
 ---
 
-# M7. Native batch settlement + HCS audit
+# M7. CRE report settlement + HCS audit
 
 ## BDD
 
 ```gherkin
-Feature: Native batch settlement
-  Scenario: Verified order settles and logs receipt atomically
-    Given an INF-funded order has a real VerifiedReceipt
-    When the MCP tool submits batch_settle_and_log
-    Then the Hedera Batch Transaction executes ProofEscrow.settle
-    And the same batch writes a RECEIPT message to the HCS audit topic
+Feature: CRE-authenticated settlement
+  Scenario: CRE report settles or authorizes settlement and logs receipt
+    Given an INF-funded order has a real CRE report from the configured workflow
+    And CRE_CHAIN_SUPPORT_GATE selected exactly one settlement shell
+    When the MCP tools settle from the CRE report and log the audit message
+    Then ProofEscrow settles INF to the seller
+    And a CRE_RECEIPT message is written to the HCS audit topic
     And the order becomes Settled
 ```
 
 ## TDD tasks
 
 ```text
-construct batch with settle and HCS receipt message
-reject batch without receipt
-reject batch with plaintext fields
-submit batch to Hedera Testnet
-record batch transaction ID
-verify HCS message sequence exists
+run CRE_CHAIN_SUPPORT_GATE before settlement implementation
+verify CRE EVM write/report support for the configured chain selector
+if direct CRE report writes are supported, implement settleFromCreReport/onReport only
+if direct CRE writes to Hedera are unsupported, implement CRE-authenticated registry/receiver plus native Hedera Batch only
+do not keep both settlement shells active after the gate
+reject settlement without a configured CRE workflow report
+reject local verifier signatures and non-CRE receipts
+reject plaintext fields in HCS audit messages
+record CRE report hash, report tx hash when present, settlement transaction ID, and HCS sequence
+verify HCS CRE_RECEIPT message sequence exists
 ```
 
 ## Done when
 
-Settlement and HCS audit log are visible as one native Hedera batch operation.
+Settlement and HCS audit log are visible in the selected CRE-authenticated shell. The demo copy must not claim trusted CRE settlement if only local simulation is configured.
 
 ---
 
@@ -838,7 +928,7 @@ shows agent decision
 shows MCP timeline
 shows Dynamic policy status
 shows encrypted prompt-history viewer
-shows zkTLS receipt card
+shows CRE zkTLS report card
 shows Hedera action checklist
 ```
 
@@ -870,10 +960,15 @@ one HFS market manifest configured
 contracts deployed
 MCP server running
 seller node running
-verifier running with real zkTLS mode
+CRE CLI installed and authenticated
+CRE workflow builds
+CRE workflow deployed and active for trusted demo
+CRE workflowId, DON identifier, gateway, target, and proof policy hash configured
+CRE_CHAIN_SUPPORT_GATE passes or records the selected fallback settlement shell
+CRE proof input and report payload quota gates pass
 x402 facilitator reachable
 scheduled transaction capability verified
-batch transaction capability verified
+selected settlement capability verified
 no forbidden files/functions/patterns detected
 ```
 
@@ -884,9 +979,9 @@ Example:
 ```json
 {
   "status": "fail",
-  "missing": ["ZKTLS_PROVIDER_POLICY_ID"],
-  "blockedFeature": "real-zktls",
-  "message": "P0 cannot run without real zkTLS proof configuration."
+  "missing": ["CRE_WORKFLOW_ID", "ZKTLS_PROVIDER_POLICY_ID"],
+  "blockedFeature": "cre-zktls",
+  "message": "P0 cannot run without deployed CRE zkTLS verification configuration."
 }
 ```
 
@@ -896,18 +991,19 @@ Example:
 
 | Area | Required proof |
 |---|---|
-| Quick Buy | Alpha chosen; x402 INF funds ProofEscrow; scheduled refund created; real zkTLS receipt; batch settlement |
+| Quick Buy | Alpha chosen; x402 INF funds ProofEscrow; scheduled refund created; CRE zkTLS report; selected CRE-authenticated settlement |
 | Router Agent | Gamma chosen from context; no formula patterns; same product path used |
 | Escrow | Open -> Settled and Open -> Refunded paths verified |
 | Scheduled refund | real scheduled transaction execution on Hedera Testnet |
-| Batch settlement | native batch contains settle + HCS receipt log |
+| CRE settlement | direct CRE report settlement or CRE-authorized Hedera Batch settlement, with HCS CRE_RECEIPT log |
 | HTS | INF used for every product payment |
 | HCS | one audit topic with hash-only messages |
 | HFS | one market manifest read by MCP |
 | Mirror Node | seller history included in context packet |
 | Dynamic | live wallet/delegation signs required action |
 | MCP | product actions use real MCP server |
-| zkTLS | real proof material required before receipt signing |
+| zkTLS | real proof material required before CRE report acceptance |
+| Chainlink CRE | deployed workflow/DON/gateway configured; local simulation is not trusted completion evidence |
 | Prompt history | encrypted local store; no public raw prompt leakage |
 | README | demo docs match actual behavior |
 
@@ -925,8 +1021,8 @@ The 3-minute demo should show:
 5. Agent decision selects Gamma without formula score.
 6. Scheduled refund transaction is shown for timeout path.
 7. Seller proxy serves request after escrow funding.
-8. Real zkTLS receipt card verifies provider/model/tokens/hash.
-9. Native batch settlement plus HCS receipt log is shown externally.
+8. CRE zkTLS report card verifies workflow/DON/provider/model/tokens/hash.
+9. Selected CRE-authenticated settlement plus HCS CRE_RECEIPT log is shown externally.
 10. Final response appears in user UI.
 ```
 
@@ -934,4 +1030,4 @@ The 3-minute demo should show:
 
 ## 8. Final Codex instruction
 
-Implement the smallest direct system that passes these behaviors. Do not create fallback paths, extra adapters, optional integration branches, duplicated schemas, duplicate services, formula routing, or performance-specific complexity. If a required external dependency is not working, make the failure explicit in tests and `pnpm demo:health`.
+Implement the smallest direct system that passes these behaviors. Do not create fallback paths, extra adapters, optional integration branches, duplicated schemas, duplicate services, formula routing, local verifier trust, or performance-specific complexity. If a required external dependency is not working, make the failure explicit in tests and `pnpm demo:health`.
