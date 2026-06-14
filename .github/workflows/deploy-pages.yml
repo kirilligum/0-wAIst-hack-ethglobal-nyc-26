@@ -41,6 +41,7 @@ jobs:
         run: pnpm build
         env:
           GITHUB_PAGES: "true"
+          DYNAMIC_ENVIRONMENT_ID: ${{ vars.DYNAMIC_ENVIRONMENT_ID }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

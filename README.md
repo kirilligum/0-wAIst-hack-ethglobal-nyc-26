@@ -96,6 +96,7 @@ sequenceDiagram
 ## What Works Now
 
 - Vite React frontend at `http://localhost:5173`.
+- Dynamic React SDK login widget visible in the frontend.
 - ProofRouter API at `http://localhost:8787`.
 - Seller node at `http://localhost:8790`.
 - Real OpenAI calls for Router Agent and answer generation.
