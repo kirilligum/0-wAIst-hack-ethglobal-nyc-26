@@ -229,7 +229,23 @@ These were produced by `pnpm demo:deploy` and written into `.env` in the continu
 Latest in-session evidence:
 
 - `RECLAIM_PROVIDER_ID`, `ZKTLS_VERIFIER_URL`, `ZKTLS_PROVIDER_POLICY_ID` still missing; Reclaim app/provider state is still `providerId: []`, `httpProviderId: []` and user provider list is empty.
-- All six `CRE_*` values are still pending; no CRE dashboard session or authorized CRE CLI state was open in the active browser run.
+- CRE dashboard session is now available at `https://app.chain.link/cre/discover`.
+- Captured Chainlink CRE metadata:
+  - organization id: `org_nrrLxzUpfXMi7kRe`
+  - derived workflow owner: `b94422f7538773a7c1ca21ea231ef0eef38ec29a`
+  - default DON family / configured `CRE_DON_ID`: `zone-a`
+  - gateway URL / configured `CRE_GATEWAY_URL`: `https://01.gateway.zone-a.cre.chain.link`
+- User completed `cre login`; `cre whoami` confirms the same organization, but deploy access is still `Not enabled`.
+- `cre account access` request was submitted successfully for the 0-wAIst CRE/zkTLS use case.
+- `cre account list-key` reports no linked workflow owners.
+- `cre workflow list --output json` returns `[]`.
+- `cre registry list` reports `private` and `onchain:ethereum-mainnet` (`0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5`).
+- `cre workflow supported-chains` does not include Hedera; it includes `ethereum-testnet-sepolia` selector `16015286601757825753` and mock forwarder `0xF8344CFd5c43616a4366C34E3EEE75af79a74482`.
+- CRE workflow deployment remains gated:
+  - dashboard GraphQL `workflows` returns `data: []`, `count: 0`
+  - organization `restrictionStatus` is `GATED`
+  - deploy access is pending review after `cre account access`
+- `CRE_WORKFLOW_ID`, `CRE_TARGET`, `CRE_CHAIN_SELECTOR`, `CRE_REPORT_RECEIVER`, and `CRE_SETTLEMENT_SHELL` remain pending until MFA/access/deployment completes.
 
 After deployment, Codex should write these into `.env`:
 

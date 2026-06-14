@@ -2,6 +2,7 @@ import { ProofRouterTool } from "@0waist/schemas";
 import {
   batchSettlementReadiness,
   dynamicReadiness,
+  openOrderReadiness,
   proxyRegistryReadiness,
   scheduledRefundReadiness,
   x402Readiness
@@ -170,6 +171,7 @@ export function getHederaActionStatus(env: NodeJS.ProcessEnv = process.env) {
   const infMissing = missing(["HTS_INF_TOKEN_ID"], env);
   const dynamic = dynamicReadiness(env);
   const x402 = x402Readiness(env);
+  const openOrder = openOrderReadiness(env);
   const scheduledRefund = scheduledRefundReadiness(env);
   const creProof = creProofReadiness(env);
   const creSettlement = creSettlementReadiness(env);
@@ -194,8 +196,8 @@ export function getHederaActionStatus(env: NodeJS.ProcessEnv = process.env) {
     },
     actions: {
       openOrderViaX402: {
-        ready: contractMissing.length === 0 && infMissing.length === 0 && dynamic.ready && x402.ready,
-        missing: [...contractMissing, ...infMissing, ...dynamic.missing, ...x402.missing],
+        ready: openOrder.ready && contractMissing.length === 0 && dynamic.ready && x402.ready,
+        missing: Array.from(new Set([...openOrder.missing, ...contractMissing, ...dynamic.missing, ...x402.missing])),
         tool: "proofrouter.open_order_via_x402"
       },
       createRefundSchedule: {

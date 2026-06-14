@@ -8,6 +8,7 @@ export * from "./hcs.js";
 export * from "./hfs.js";
 export * from "./hts.js";
 export * from "./mirror.js";
+export * from "./order.js";
 export * from "./registry.js";
 export * from "./schedule.js";
 export * from "./verifier.js";

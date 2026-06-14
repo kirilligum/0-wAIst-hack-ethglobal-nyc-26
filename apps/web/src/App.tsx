@@ -18,7 +18,9 @@ import {
   fetchOffers,
   HederaActionStatus,
   HederaSetupResult,
+  OpenEscrowOrderResult,
   registerSeller,
+  openEscrowOrder,
   setupHedera
 } from "./api.js";
 
@@ -51,6 +53,9 @@ export default function App() {
   const [sellerLoading, setSellerLoading] = useState(false);
   const [sellerResult, setSellerResult] = useState<SellerRegistrationResult | null>(null);
   const [sellerError, setSellerError] = useState<string | null>(null);
+  const [escrowLoading, setEscrowLoading] = useState(false);
+  const [escrowResult, setEscrowResult] = useState<OpenEscrowOrderResult | null>(null);
+  const [escrowError, setEscrowError] = useState<string | null>(null);
   const [sellerForm, setSellerForm] = useState({
     sellerId: "local-seller",
     displayName: "Local Seller Proxy",
@@ -82,6 +87,9 @@ export default function App() {
     if (!result) return null;
     return offers.find((offer) => offer.offerId === result.selectedOffer.offerId) ?? result.selectedOffer;
   }, [offers, result]);
+  const selectedRegistryOfferId = selectedSeller?.registryOfferId && /^\d+$/.test(selectedSeller.registryOfferId)
+    ? Number(selectedSeller.registryOfferId)
+    : null;
   const verificationMode = hederaActions?.prerequisites.creProof.mode;
   const verifierLabel = verificationMode === "local-verifier-placeholder" ? "Local verifier" : "CRE proof";
   const reportLabel = verificationMode === "local-verifier-placeholder" ? "Receipt" : "CRE report";
@@ -94,6 +102,8 @@ export default function App() {
     try {
       const next = await createOrder({ prompt, budgetInf, mode });
       setResult(next);
+      setEscrowResult(null);
+      setEscrowError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Order failed");
     } finally {
@@ -137,6 +147,26 @@ export default function App() {
       setSellerError(err instanceof Error ? err.message : "Seller registration failed");
     } finally {
       setSellerLoading(false);
+    }
+  }
+
+  async function prepareEscrowOrder() {
+    if (!result || !selectedRegistryOfferId) {
+      setEscrowError("Select a seller with an on-chain registry offer before preparing escrow.");
+      return;
+    }
+    setEscrowLoading(true);
+    setEscrowError(null);
+    try {
+      setEscrowResult(await openEscrowOrder({
+        offerId: selectedRegistryOfferId,
+        promptHash: result.promptHash,
+        requestHash: result.requestHash
+      }));
+    } catch (err) {
+      setEscrowError(err instanceof Error ? err.message : "Escrow order preparation failed");
+    } finally {
+      setEscrowLoading(false);
     }
   }
 
@@ -515,6 +545,40 @@ export default function App() {
                   : "HashScan link appears after Hedera submission"}
               </div>
             )}
+
+            <div className="escrow-status">
+              <button
+                className="secondary"
+                type="button"
+                disabled={escrowLoading || !result || !selectedRegistryOfferId}
+                onClick={() => void prepareEscrowOrder()}
+              >
+                {escrowLoading ? <LoaderCircle className="spin" size={18} /> : <CircleDollarSign size={18} />}
+                Prepare x402 escrow
+              </button>
+              {result && !selectedRegistryOfferId ? (
+                <div className="blocked">
+                  <Store size={17} />
+                  Seller needs a registry offer id
+                </div>
+              ) : null}
+              {escrowError ? <p className="error">{escrowError}</p> : null}
+              {escrowResult ? (
+                <div className={escrowResult.status === "blocked" ? "escrow-result blocked-text" : "escrow-result"}>
+                  <strong>{escrowResult.status}</strong>
+                  <span>{escrowResult.message}</span>
+                  {escrowResult.preparedTransaction ? (
+                    <code>{escrowResult.preparedTransaction.functionParametersHex.slice(0, 42)}...</code>
+                  ) : null}
+                  {escrowResult.hashScanUrl ? (
+                    <a href={escrowResult.hashScanUrl} target="_blank" rel="noreferrer">
+                      <ExternalLink size={16} />
+                      Open escrow transaction
+                    </a>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </section>
         </section>
 

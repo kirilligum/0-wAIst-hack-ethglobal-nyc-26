@@ -150,3 +150,72 @@ Blocked credentials:
 Deviations:
 
 - Could only validate state and blockers from browser/API checks; no new credentials were added to `.env` in this run.
+
+## 2026-06-14 — CRE dashboard and Reclaim builder follow-up
+
+Status: non-secret metadata captured, blocked on external approval/provider setup
+Owner: Codex
+
+Completed steps:
+
+- Attached Playwright CLI/MCP session `cre-reclaim` to the logged-in Chrome debug profile at `http://127.0.0.1:9222`.
+- Confirmed active tabs:
+  - Chainlink CRE dashboard: `https://app.chain.link/cre/discover`
+  - Reclaim developer portal: `https://dev.reclaimprotocol.org/my-applications`
+- Captured Chainlink CRE dashboard metadata from GraphQL responses:
+  - organization id: `org_nrrLxzUpfXMi7kRe`
+  - organization restriction status: `GATED`
+  - derived workflow owner: `b94422f7538773a7c1ca21ea231ef0eef38ec29a`
+  - default DON family: `zone-a`
+  - vault gateway URL: `https://01.gateway.zone-a.cre.chain.link`
+  - workflows: `data: []`, `count: 0`
+  - workflow executions: `data: []`, `count: 0`
+- Installed CRE CLI `v1.20.0` into `$HOME/.cre/bin/cre`.
+- User completed `cre login` successfully from the terminal.
+- Ran `cre whoami`; account metadata:
+  - email: `kirill.igum@gmail.com`
+  - organization id: `org_nrrLxzUpfXMi7kRe`
+  - organization name: `My Org`
+  - deploy access: `Not enabled`
+- Ran `cre account access` and submitted the deployment access request with the 0-wAIst CRE/Reclaim settlement use case.
+- Ran `cre account list-key`; no linked workflow owners were found.
+- Ran `cre workflow list --output json`; no workflows were found (`[]`).
+- Ran `cre registry list`; available registries:
+  - private registry id: `private`
+  - on-chain registry id: `onchain:ethereum-mainnet`
+  - on-chain registry address: `0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5`
+- Ran `cre workflow supported-chains`; Hedera is not listed as directly supported. The usable test chain captured for future settlement wiring is:
+  - `CRE_SUPPORTED_TEST_CHAIN=ethereum-testnet-sepolia`
+  - `CRE_SUPPORTED_TEST_CHAIN_SELECTOR=16015286601757825753`
+  - `CRE_SUPPORTED_TEST_FORWARDER=0xF8344CFd5c43616a4366C34E3EEE75af79a74482`
+
+Artifact updates:
+
+- Added confirmed non-secret CRE dashboard metadata to `.env`:
+  - `CRE_ORGANIZATION_ID`
+  - `CRE_DEPLOY_ACCESS_STATUS`
+  - `CRE_DERIVED_WORKFLOW_OWNER`
+  - `CRE_DEFAULT_DON_FAMILY`
+  - `CRE_PRIVATE_REGISTRY_ID`
+  - `CRE_ONCHAIN_REGISTRY_ID`
+  - `CRE_ONCHAIN_REGISTRY_ADDRESS`
+  - `CRE_HEDERA_DIRECT_SUPPORTED`
+  - `CRE_SUPPORTED_TEST_CHAIN`
+  - `CRE_SUPPORTED_TEST_CHAIN_SELECTOR`
+  - `CRE_SUPPORTED_TEST_FORWARDER`
+  - `CRE_DON_ID`
+  - `CRE_GATEWAY_URL`
+- Updated `plans/browser-credential-followup-plan.md` and `plans/credential-acquisition-plan.md` with the same current status and remaining blockers.
+
+Blocked credentials:
+
+- `CRE_WORKFLOW_ID`, `CRE_TARGET`, `CRE_CHAIN_SELECTOR`, `CRE_REPORT_RECEIVER`, and `CRE_SETTLEMENT_SHELL` remain pending because no workflow exists and deployment access is gated.
+- `CRE_DEPLOY_ACCESS_STATUS=requested` is recorded in `.env`; wait for Chainlink approval before attempting workflow deployment.
+- `RECLAIM_PROVIDER_ID`, `ZKTLS_VERIFIER_URL`, and `ZKTLS_PROVIDER_POLICY_ID` remain pending.
+
+Reclaim status:
+
+- `waistminimaldemo2` still shows no linked provider controls in the integration page.
+- `My Providers` still shows `(0)`.
+- `New Provider -> Manual` opens `provider-builder` and requires the Reclaim Developer mobile app session; observed session id: `498720`.
+- `New Provider -> AI-Powered Beta` opens `provider-builder/ai` and asks for a target website URL. No provider was created because selecting an arbitrary URL would not prove the seller LLM response facts required by the plan.

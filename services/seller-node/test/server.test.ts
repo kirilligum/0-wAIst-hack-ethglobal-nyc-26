@@ -1,6 +1,6 @@
 import { AddressInfo } from "node:net";
 import { describe, expect, it } from "vitest";
-import { buildX402Challenge, createSellerApp, createSellerReadiness } from "../src/server.js";
+import { buildX402Challenge, createSellerApp, createSellerReadiness, parseEscrowEvidence } from "../src/server.js";
 
 function listen(app: ReturnType<typeof createSellerApp>) {
   return new Promise<{ url: string; close: () => Promise<void> }>((resolve) => {
@@ -36,14 +36,47 @@ describe("seller node", () => {
 
     expect(challenge.accepts[0].asset).toBe("INF");
     expect(challenge.accepts[0].payTo).toBe("0.0.9186037");
+    expect(challenge.requiredEscrowHeaders).toContain("x-0waist-request-hash");
   });
 
-  it("returns 402 before forwarding and forwards with escrow evidence", async () => {
+  it("validates structured escrow evidence headers", () => {
+    const accepted = parseEscrowEvidence({
+      "x-0waist-escrow-order-id": "12",
+      "x-0waist-offer-id": "7",
+      "x-0waist-request-hash": "a".repeat(64),
+      "x-0waist-proof-escrow": "0.0.9226648"
+    }, {
+      PROOF_ESCROW_CONTRACT_ID: "0.0.9226648",
+      X402_NETWORK: "hedera-testnet"
+    });
+
+    expect(accepted.status).toBe("accepted");
+    if (accepted.status === "accepted") {
+      expect(accepted.evidence.orderId).toBe(12);
+      expect(accepted.evidence.paymentAsset).toBe("INF");
+    }
+
+    const mismatched = parseEscrowEvidence({
+      "x-0waist-escrow-order-id": "12",
+      "x-0waist-request-hash": "a".repeat(64),
+      "x-0waist-proof-escrow": "0.0.111"
+    }, {
+      PROOF_ESCROW_CONTRACT_ID: "0.0.9226648"
+    });
+
+    expect(mismatched.status).toBe("blocked");
+    if (mismatched.status === "blocked") {
+      expect(mismatched.missing).toContain("matchingProofEscrow");
+    }
+  });
+
+  it("returns 402 before forwarding and forwards with complete escrow evidence", async () => {
     const app = createSellerApp(
       {
         OPENAI_API_KEY: "test-key",
         OPENAI_MODEL: "gpt-4.1-mini",
-        X402_PAYMENT_ASSET: "INF"
+        X402_PAYMENT_ASSET: "INF",
+        PROOF_ESCROW_CONTRACT_ID: "0.0.9226648"
       },
       {
         async fetchImpl() {
@@ -73,11 +106,26 @@ describe("seller node", () => {
       });
       expect(unpaid.status).toBe(402);
 
-      const paid = await fetch(`${server.url}/v1/chat/completions`, {
+      const incomplete = await fetch(`${server.url}/v1/chat/completions`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
           "x-0waist-escrow-order-id": "1"
+        },
+        body: JSON.stringify({ messages: [{ role: "user", content: "hi" }] })
+      });
+      expect(incomplete.status).toBe(402);
+      expect(await incomplete.json()).toMatchObject({
+        missingEscrowEvidence: expect.arrayContaining(["requestHash", "proofEscrowContractIdOrAddress"])
+      });
+
+      const paid = await fetch(`${server.url}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-0waist-escrow-order-id": "1",
+          "x-0waist-request-hash": "a".repeat(64),
+          "x-0waist-proof-escrow": "0.0.9226648"
         },
         body: JSON.stringify({ messages: [{ role: "user", content: "hi" }] })
       });

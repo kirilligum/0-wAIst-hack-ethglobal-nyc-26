@@ -12,6 +12,7 @@ import {
 } from "@0waist/hedera";
 import { getCheapestCompatibleOffer, listProxyOffers } from "./offers.js";
 import { createLocalVerifierReceipt } from "./localVerifier.js";
+import { openOrderViaX402 } from "./orderOpening.js";
 import { readPromptHistory } from "./promptHistory.js";
 import { registerSellerOffer } from "./sellerRegistration.js";
 import { getHederaActionStatus, PROOFROUTER_TOOLS } from "./tools.js";
@@ -155,17 +156,16 @@ export function createProofRouterMcpServer(env: NodeJS.ProcessEnv = process.env)
 
   server.registerTool("proofrouter.open_order_via_x402", {
     description: "Open a Hedera x402-funded order.",
+    inputSchema: {
+      offerId: z.number().int().positive(),
+      promptHash: z.string().regex(/^(0x)?[0-9a-fA-F]{64}$/),
+      requestHash: z.string().regex(/^(0x)?[0-9a-fA-F]{64}$/),
+      deadlineEpochSeconds: z.number().int().positive().optional(),
+      submitOnChain: z.boolean().default(false),
+      confirmedBuyerSigner: z.boolean().default(false)
+    },
     annotations: { readOnlyHint: false, openWorldHint: true }
-  }, () => guardedTool(() => {
-    const action = getHederaActionStatus(env).actions.openOrderViaX402;
-    return {
-      status: action.ready ? "ready" : "blocked",
-      missing: action.missing,
-      message: action.ready
-        ? "x402 order opening is configured, but live buyer wallet execution is not invoked by this read-only smoke path."
-        : "x402 order opening is blocked until missing credentials are configured."
-    };
-  }));
+  }, (input) => guardedTool(async () => await openOrderViaX402(input, env)));
 
   server.registerTool("proofrouter.create_refund_schedule", {
     description: "Create the scheduled refund transaction.",

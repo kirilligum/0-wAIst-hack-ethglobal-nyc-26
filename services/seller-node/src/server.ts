@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import express, { type Express } from "express";
 import { z } from "zod";
 import { x402Readiness } from "@0waist/hedera";
-import { SellerRegistrationRequestSchema } from "@0waist/schemas";
+import { EscrowEvidence, EscrowEvidenceSchema, SellerRegistrationRequestSchema } from "@0waist/schemas";
 
 for (const candidate of [resolve(process.cwd(), ".env"), resolve(process.cwd(), "../../.env")]) {
   if (existsSync(candidate)) {
@@ -61,6 +61,8 @@ export interface X402Challenge {
     resource: string;
     description: string;
   }>;
+  requiredEscrowHeaders: string[];
+  missingEscrowEvidence?: string[];
   error: string;
 }
 
@@ -122,6 +124,11 @@ export function buildX402Challenge(env: NodeJS.ProcessEnv = process.env): X402Ch
         description: "Fund a ProofEscrow order in INF before calling this seller proxy."
       }
     ],
+    requiredEscrowHeaders: [
+      "x-0waist-escrow-order-id",
+      "x-0waist-request-hash",
+      "x-0waist-proof-escrow"
+    ],
     error: "Payment required. Retry with an x402 payment proof or a funded 0-wAIst escrow order header."
   };
 }
@@ -142,12 +149,87 @@ function upstreamConfig(env: NodeJS.ProcessEnv) {
   };
 }
 
-function hasPaymentEvidence(headers: Record<string, string | string[] | undefined>): boolean {
-  return Boolean(
-    headers["x-payment"]
-      || headers["x-0waist-payment"]
-      || headers["x-0waist-escrow-order-id"]
-  );
+function firstHeader(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function parseJsonEvidenceHeader(value: string | undefined): unknown | undefined {
+  if (!value) {
+    return undefined;
+  }
+  try {
+    return JSON.parse(value);
+  } catch {
+    return undefined;
+  }
+}
+
+export type EscrowEvidenceCheck = {
+  status: "accepted";
+  evidence: EscrowEvidence;
+} | {
+  status: "blocked";
+  missing: string[];
+  message: string;
+};
+
+export function parseEscrowEvidence(
+  headers: Record<string, string | string[] | undefined>,
+  env: NodeJS.ProcessEnv = process.env
+): EscrowEvidenceCheck {
+  const embedded = parseJsonEvidenceHeader(firstHeader(headers["x-0waist-escrow-evidence"]));
+  const candidate = embedded ?? {
+    orderId: firstHeader(headers["x-0waist-escrow-order-id"]),
+    offerId: firstHeader(headers["x-0waist-offer-id"]),
+    requestHash: firstHeader(headers["x-0waist-request-hash"]),
+    proofEscrowContractIdOrAddress: firstHeader(headers["x-0waist-proof-escrow"]),
+    network: firstHeader(headers["x-0waist-network"]) ?? env.X402_NETWORK ?? "hedera-testnet",
+    paymentAsset: firstHeader(headers["x-0waist-payment-asset"]) ?? "INF",
+    payer: firstHeader(headers["x-0waist-payer"]),
+    transactionId: firstHeader(headers["x-0waist-escrow-transaction-id"]),
+    hashScanUrl: firstHeader(headers["x-0waist-escrow-hashscan-url"])
+  };
+
+  const parsed = EscrowEvidenceSchema.safeParse(candidate);
+  if (!parsed.success) {
+    const flattened = parsed.error.flatten().fieldErrors;
+    const missing = Object.entries(flattened)
+      .filter(([, messages]) => messages && messages.length > 0)
+      .map(([field]) => field);
+    return {
+      status: "blocked",
+      missing: missing.length > 0 ? missing : ["escrowEvidence"],
+      message: "Seller proxy requires structured 0-wAIst escrow evidence before forwarding."
+    };
+  }
+
+  const configuredEscrow = [
+    env.PROOF_ESCROW_CONTRACT_ID,
+    env.PROOF_ESCROW_ADDRESS
+  ].filter((value): value is string => Boolean(value));
+  if (
+    configuredEscrow.length > 0
+    && !configuredEscrow.includes(parsed.data.proofEscrowContractIdOrAddress)
+  ) {
+    return {
+      status: "blocked",
+      missing: ["matchingProofEscrow"],
+      message: "Escrow evidence targets a different ProofEscrow contract than this seller is configured to accept."
+    };
+  }
+
+  if ((env.X402_NETWORK ?? "hedera-testnet") !== parsed.data.network) {
+    return {
+      status: "blocked",
+      missing: ["matchingNetwork"],
+      message: "Escrow evidence network does not match this seller x402 network."
+    };
+  }
+
+  return {
+    status: "accepted",
+    evidence: parsed.data
+  };
 }
 
 async function forwardChatCompletion(input: {
@@ -211,8 +293,13 @@ export function createSellerApp(
 
   app.post("/v1/chat/completions", async (request, response) => {
     try {
-      if (!hasPaymentEvidence(request.headers)) {
-        response.status(402).json(buildX402Challenge(env));
+      const escrowEvidence = parseEscrowEvidence(request.headers, env);
+      if (escrowEvidence.status === "blocked") {
+        response.status(402).json({
+          ...buildX402Challenge(env),
+          missingEscrowEvidence: escrowEvidence.missing,
+          error: escrowEvidence.message
+        });
         return;
       }
 

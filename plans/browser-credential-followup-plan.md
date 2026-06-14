@@ -11,7 +11,21 @@ Current captured state (2026-06-14):
 - `DYNAMIC_*`, `X402_*`, `RECLAIM_APP_ID`, `RECLAIM_APP_SECRET`, and `CLOUDFLARE_ACCOUNT_ID` are already in `.env`.
 - `RECLAIM_PROVIDER_ID`, `ZKTLS_VERIFIER_URL`, `ZKTLS_PROVIDER_POLICY_ID` remain unset.
   - Reclaim app metadata payload (`GET /api/applications/<appId>`) currently returns `providerId: []` and `httpProviderId: []`.
-- `CRE_WORKFLOW_ID`, `CRE_DON_ID`, `CRE_GATEWAY_URL`, `CRE_TARGET`, `CRE_CHAIN_SELECTOR`, `CRE_REPORT_RECEIVER` remain unset.
+- Chainlink CRE dashboard metadata is now partly captured:
+  - `CRE_ORGANIZATION_ID=org_nrrLxzUpfXMi7kRe`
+  - `CRE_DERIVED_WORKFLOW_OWNER=b94422f7538773a7c1ca21ea231ef0eef38ec29a`
+  - `CRE_DON_ID=zone-a`
+  - `CRE_GATEWAY_URL=https://01.gateway.zone-a.cre.chain.link`
+- CRE CLI metadata is now partly captured:
+  - `CRE_DEPLOY_ACCESS_STATUS=requested`
+  - `CRE_PRIVATE_REGISTRY_ID=private`
+  - `CRE_ONCHAIN_REGISTRY_ID=onchain:ethereum-mainnet`
+  - `CRE_ONCHAIN_REGISTRY_ADDRESS=0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5`
+  - `CRE_HEDERA_DIRECT_SUPPORTED=false`
+  - `CRE_SUPPORTED_TEST_CHAIN=ethereum-testnet-sepolia`
+  - `CRE_SUPPORTED_TEST_CHAIN_SELECTOR=16015286601757825753`
+  - `CRE_SUPPORTED_TEST_FORWARDER=0xF8344CFd5c43616a4366C34E3EEE75af79a74482`
+- `CRE_WORKFLOW_ID`, `CRE_TARGET`, `CRE_CHAIN_SELECTOR`, `CRE_REPORT_RECEIVER`, and `CRE_SETTLEMENT_SHELL` remain unset.
 
 ## Current Credential State
 
@@ -49,8 +63,8 @@ RECLAIM_PROVIDER_ID
 ZKTLS_VERIFIER_URL
 ZKTLS_PROVIDER_POLICY_ID
 CRE_WORKFLOW_ID
-CRE_DON_ID
 CRE_GATEWAY_URL
+CRE_DON_ID
 CRE_TARGET
 CRE_CHAIN_SELECTOR
 CRE_REPORT_RECEIVER
@@ -162,13 +176,37 @@ Use the logged-in browser session and/or the authenticated Chainlink CRE CLI.
 3. Install/authenticate the CRE CLI if needed.
 4. Create or identify the `0-wAIst` zkTLS verifier workflow target.
 
-Progress update: no active CRE dashboard/workflow tab or CLI-authenticated state was observed for this run; CRE values remain uncollectable from browser automation in the current session.
+Progress update:
+
+- Active CRE dashboard tab was observed at `https://app.chain.link/cre/discover`.
+- The dashboard organization is active but gated:
+  - `organizationId: org_nrrLxzUpfXMi7kRe`
+  - `restrictionStatus: GATED`
+  - `defaultDonFamily: zone-a`
+  - `vaultGatewayUrl: https://01.gateway.zone-a.cre.chain.link`
+  - `derivedWorkflowOwners: ["b94422f7538773a7c1ca21ea231ef0eef38ec29a"]`
+- `GET/GraphQL workflows` responses return `data: []`, `count: 0`; no deployed workflow exists yet.
+- Dashboard says deployment to a Chainlink DON is gated and requires `cre account access`.
+- CRE CLI `v1.20.0` is installed at `$HOME/.cre/bin/cre`.
+- `cre login` later completed successfully from the user's terminal.
+- `cre whoami` confirms:
+  - email: `kirill.igum@gmail.com`
+  - organization id: `org_nrrLxzUpfXMi7kRe`
+  - organization name: `My Org`
+  - deploy access: `Not enabled`
+- `cre account access` was rerun after login; access request was submitted successfully with the 0-wAIst use case.
+- `cre account list-key` reports no linked workflow owners.
+- `cre workflow list --output json` returns `[]`.
+- `cre registry list` reports these registries:
+  - `private`
+  - `onchain:ethereum-mainnet`, address `0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5`
+- `cre workflow supported-chains` does not list Hedera. It does list `ethereum-testnet-sepolia` with selector `16015286601757825753` and mock forwarder `0xF8344CFd5c43616a4366C34E3EEE75af79a74482`.
 5. Capture these values into `.env` once they exist:
 
 ```bash
 CRE_WORKFLOW_ID=
-CRE_DON_ID=
-CRE_GATEWAY_URL=
+CRE_DON_ID=zone-a
+CRE_GATEWAY_URL=https://01.gateway.zone-a.cre.chain.link
 CRE_TARGET=
 CRE_CHAIN_SELECTOR=
 CRE_REPORT_RECEIVER=

@@ -290,7 +290,8 @@ h3 {
 }
 
 .segmented button,
-.primary {
+.primary,
+.secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -352,7 +353,16 @@ input {
   font-weight: 800;
 }
 
-.primary:disabled {
+.secondary {
+  width: 100%;
+  border: 1px solid #bdd4cf;
+  color: #146c5f;
+  background: #f5fbf9;
+  font-weight: 800;
+}
+
+.primary:disabled,
+.secondary:disabled {
   cursor: not-allowed;
   opacity: 0.65;
 }
@@ -430,6 +440,44 @@ input {
   background: #f6ece2;
   color: #7a4215;
   font-weight: 800;
+}
+
+.escrow-status {
+  display: grid;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.escrow-result {
+  display: grid;
+  gap: 6px;
+  color: #31434b;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.escrow-result strong {
+  color: #126349;
+  text-transform: capitalize;
+}
+
+.escrow-result code {
+  overflow-wrap: anywhere;
+  color: #1d4b61;
+  font-size: 0.78rem;
+}
+
+.escrow-result a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #146c5f;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.blocked-text strong {
+  color: #7a4215;
 }
 
 .market {

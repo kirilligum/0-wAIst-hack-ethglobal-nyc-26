@@ -156,3 +156,52 @@ export async function registerSeller(input: {
   }
   return body as SellerRegistrationResult;
 }
+
+export interface OpenEscrowOrderResult {
+  status: "prepared" | "submitted" | "blocked";
+  missing: string[];
+  message: string;
+  preparedTransaction?: {
+    proofEscrowContractIdOrAddress: string;
+    functionName: "openOrder";
+    gas: number;
+    functionParametersHex: string;
+    order: {
+      offerId: number;
+      promptHash: string;
+      requestHash: string;
+      deadlineEpochSeconds: number;
+    };
+    x402: {
+      facilitatorUrl?: string;
+      network: string;
+      paymentAsset: "INF";
+    };
+  };
+  transactionId?: string;
+  hashScanUrl?: string;
+  orderId?: string;
+  escrowEvidence?: unknown;
+}
+
+export async function openEscrowOrder(input: {
+  offerId: number;
+  promptHash: string;
+  requestHash: string;
+  deadlineEpochSeconds?: number;
+  submitOnChain?: boolean;
+  confirmedBuyerSigner?: boolean;
+}): Promise<OpenEscrowOrderResult> {
+  const response = await fetch(`${API_BASE_URL}/api/orders/open-via-x402`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input)
+  });
+
+  const body = await response.json();
+  if (!response.ok && body?.status !== "blocked") {
+    const apiError = body as ApiErrorBody;
+    throw new Error(apiError.error?.message ?? `Escrow order request failed with HTTP ${response.status}`);
+  }
+  return body as OpenEscrowOrderResult;
+}
