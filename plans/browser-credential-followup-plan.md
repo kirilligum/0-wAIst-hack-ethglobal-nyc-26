@@ -1,10 +1,16 @@
 # Browser Credential Follow-Up Plan
 
-Status: open
+Status: in_progress
 Owner: next Codex CLI session with access to the logged-in browser
 Last updated: 2026-06-14
 
 Goal: finish only the remaining browser/dashboard credential work, write the values into repo-local `.env`, and report what is still blocked. Do not commit `.env` or paste secrets into committed files.
+
+Current captured state (2026-06-14):
+
+- `DYNAMIC_*`, `X402_*`, `RECLAIM_APP_ID`, `RECLAIM_APP_SECRET`, and `CLOUDFLARE_ACCOUNT_ID` are already in `.env`.
+- `RECLAIM_PROVIDER_ID`, `ZKTLS_VERIFIER_URL`, `ZKTLS_PROVIDER_POLICY_ID` remain unset.
+- `CRE_WORKFLOW_ID`, `CRE_DON_ID`, `CRE_GATEWAY_URL`, `CRE_TARGET`, `CRE_CHAIN_SELECTOR`, `CRE_REPORT_RECEIVER` remain unset.
 
 ## Current Credential State
 
@@ -81,15 +87,17 @@ test hardening around existing mocked/blocked states
 plan/README updates that clearly label blocked live integrations
 ```
 
-## Task A: Finish Reclaim Provider Setup
+## Task A: Finish Reclaim Provider Setup (in-progress)
 
 Use the logged-in browser session.
 
 1. Open `https://dev.reclaimprotocol.org/`.
 2. Select the existing app that matches `.env` `RECLAIM_APP_ID`.
 3. Inspect linked providers for the app.
-4. If a suitable provider already exists, copy its provider ID.
-5. If no provider exists, create or link a provider/policy that can prove the seller's LLM-provider response facts:
+4. Record current state as evidence:
+   - For this run, provider list is currently empty (`providerId: []` in app metadata).
+5. If a suitable provider already exists, copy its provider ID into `.env`.
+6. If no provider exists, create or link a provider/policy that can prove the seller's LLM-provider response facts:
    - provider host
    - endpoint
    - requested model
@@ -98,19 +106,19 @@ Use the logged-in browser session.
    - token usage fields, if exposed
    - response hash, response bytes, or a stable field set sufficient to derive the response hash
    - order binding fields such as `orderId` and `requestHash`, if they can be embedded safely
-6. Put the provider ID into `.env`:
+7. Put the provider ID into `.env`:
 
 ```bash
 RECLAIM_PROVIDER_ID=
 ```
 
-7. If Reclaim exposes a verifier, app backend, callback, or SDK verification endpoint needed by our implementation, add it to `.env`:
+8. If Reclaim exposes a verifier, app backend, callback, or SDK verification endpoint needed by our implementation, add it to `.env`:
 
 ```bash
 ZKTLS_VERIFIER_URL=
 ```
 
-8. If Reclaim exposes a separate provider policy/rule identifier, put it into `.env`:
+9. If Reclaim exposes a separate provider policy/rule identifier, put it into `.env`:
 
 ```bash
 ZKTLS_PROVIDER_POLICY_ID=
@@ -125,7 +133,7 @@ ZKTLS_PROVIDER_POLICY_ID=
 
 Do not mark this complete until the CLI session can explain which Reclaim value maps to each `.env` field.
 
-## Task B: Collect Chainlink CRE Dashboard/CLI Values
+## Task B: Collect Chainlink CRE Dashboard/CLI Values (pending)
 
 Use the logged-in browser session and/or the authenticated Chainlink CRE CLI.
 
@@ -190,4 +198,9 @@ After updating `.env`, tell the main implementation session:
 
 ```text
 I updated .env with the remaining Reclaim/zkTLS/CRE credential fields. Key-presence check: <paste present/missing names only>. Continue implementation from plans/browser-credential-followup-plan.md and 0-waist-bdd-tdd-plan-v5.md.
+
+## Implementation Status (this run)
+
+- Reclaim capture status: app IDs/captures done; provider/policy fields still pending.
+- CRE capture status: all six `CRE_*` values still pending.
 ```

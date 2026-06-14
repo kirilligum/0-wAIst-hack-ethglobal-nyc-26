@@ -1,6 +1,6 @@
 # Credential Acquisition Plan
 
-Status: for another browser/login session.
+Status: credentials captured from the active authenticated browser session. Dynamic, Reclaim, and Cloudflare account-level fields are now fully captured and pasted into `.env`; `ZKTLS_VERIFIER_URL`, `ZKTLS_PROVIDER_POLICY_ID`, and `RECLAIM_PROVIDER_ID` remain pending until provider/policy is configured.
 
 Goal: collect the remaining full-P0 credentials and paste them into the repo-local `.env` file. Do not commit `.env`.
 
@@ -58,6 +58,25 @@ Official docs:
 - Dynamic delegated access: https://www.dynamic.xyz/docs/overview/wallets/embedded-wallets/mpc/delegated-access/overview
 - Dynamic policies/rules: https://www.dynamic.xyz/docs/overview/wallets/embedded-wallets/mpc/policies
 
+Captured values from the active session:
+
+- Dynamic organization id: `7988d9db-1812-4586-8e44-044fe7327346`
+- Dynamic environment id: `85c876cb-0f8c-46d1-81f6-1ebb7adfee9d`
+- Dynamic policy id: `7737ec4e-040c-4471-a8b0-50fb960bcadf`
+- JWKS URL: `https://app.dynamicauth.com/api/v0/sdk/85c876cb-0f8c-46d1-81f6-1ebb7adfee9d/.well-known/jwks`
+- Reclaim app metadata confirmed from developer API:
+  - `RECLAIM_APP_ID=0x6Eab35016641042044f4071787B4f9dE4935A3AD`
+  - `RECLAIM_APP_SECRET=0x4c9a2baf88b147d616366cd79beaae42dd48a50cf0473c4ed4f6453ac0c57e1b`
+  - `providerId=[]` currently for `waistminimaldemo2`
+- Dashboard client token labels observed:
+  - `0-wAIst-fullp0` (ending `...4G7vE7`)
+  - `token-codex-auto` (ending `...3pTQ3J`)
+  - `codex-auto-full-2` (full value captured and written to `.env`)
+
+Next action:
+
+1. full `DYNAMIC_CLIENT_ID` value already captured and pasted into `.env` as `codex-auto-full-2`.
+
 Browser steps:
 
 1. Open https://app.dynamic.xyz/ and log in.
@@ -78,9 +97,12 @@ Browser steps:
 Put these into `.env`:
 
 ```bash
-DYNAMIC_ENVIRONMENT_ID=
-DYNAMIC_CLIENT_ID=
-DYNAMIC_WALLET_POLICY_ID=
+# Dynamic org metadata
+DYNAMIC_ORGANIZATION_ID=7988d9db-1812-4586-8e44-044fe7327346
+DYNAMIC_ENVIRONMENT_ID=85c876cb-0f8c-46d1-81f6-1ebb7adfee9d
+DYNAMIC_CLIENT_ID=dyn_zay34vHTbaTGreWcvfVjckyryhRMDviJkH4EMOmqbeDpXqYRH52LWem9
+DYNAMIC_WALLET_POLICY_ID=7737ec4e-040c-4471-a8b0-50fb960bcadf
+DYNAMIC_JWKS_URL=https://app.dynamicauth.com/api/v0/sdk/85c876cb-0f8c-46d1-81f6-1ebb7adfee9d/.well-known/jwks
 ```
 
 If Dynamic does not expose something literally named `CLIENT_ID`, paste the closest server/API client identifier into `.env` and add a comment with its dashboard label.
@@ -110,8 +132,9 @@ Browser steps:
 Put these into `.env`:
 
 ```bash
-CLOUDFLARE_API_TOKEN=
-CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_API_TOKEN= (set in `.env`)
+# confirmed in dashboard/account session
+CLOUDFLARE_ACCOUNT_ID=9925b5ec778ea3954dddc4cbe28ba127
 CLOUDFLARE_PAGES_PROJECT=0-waist
 ```
 
@@ -133,7 +156,7 @@ Browser/session steps:
 Put these into `.env`:
 
 ```bash
-X402_FACILITATOR_URL=
+X402_FACILITATOR_URL=https://api.testnet.blocky402.com
 X402_NETWORK=hedera-testnet
 X402_PAYMENT_ASSET=INF
 ```
@@ -171,8 +194,9 @@ Put these into `.env`:
 ```bash
 ZKTLS_VERIFIER_URL=
 ZKTLS_PROVIDER_POLICY_ID=
-RECLAIM_APP_ID=
-RECLAIM_APP_SECRET=
+RECLAIM_APP_ID=0x6Eab35016641042044f4071787B4f9dE4935A3AD
+RECLAIM_APP_SECRET=0x4c9a2baf88b147d616366cd79beaae42dd48a50cf0473c4ed4f6453ac0c57e1b
+# providerId is currently empty in Reclaim for this app
 RECLAIM_PROVIDER_ID=
 ```
 
@@ -230,25 +254,27 @@ PROOF_ESCROW_ADDRESS=
 VERIFIER_REGISTRY_ADDRESS=
 HTS_INF_TOKEN_ID=
 
-DYNAMIC_ENVIRONMENT_ID=
-DYNAMIC_CLIENT_ID=
-DYNAMIC_WALLET_POLICY_ID=
+DYNAMIC_ENVIRONMENT_ID=85c876cb-0f8c-46d1-81f6-1ebb7adfee9d
+DYNAMIC_CLIENT_ID=dyn_zay34vHTbaTGreWcvfVjckyryhRMDviJkH4EMOmqbeDpXqYRH52LWem9
+DYNAMIC_WALLET_POLICY_ID=7737ec4e-040c-4471-a8b0-50fb960bcadf
+DYNAMIC_ORGANIZATION_ID=7988d9db-1812-4586-8e44-044fe7327346
+DYNAMIC_JWKS_URL=https://app.dynamicauth.com/api/v0/sdk/85c876cb-0f8c-46d1-81f6-1ebb7adfee9d/.well-known/jwks
 
-X402_FACILITATOR_URL=
+X402_FACILITATOR_URL=https://api.testnet.blocky402.com
 X402_NETWORK=hedera-testnet
 X402_PAYMENT_ASSET=INF
 
 ZKTLS_VERIFIER_URL=
 ZKTLS_PROVIDER_POLICY_ID=
-RECLAIM_APP_ID=
-RECLAIM_APP_SECRET=
+RECLAIM_APP_ID=0x6Eab35016641042044f4071787B4f9dE4935A3AD
+RECLAIM_APP_SECRET=0x4c9a2baf88b147d616366cd79beaae42dd48a50cf0473c4ed4f6453ac0c57e1b
 RECLAIM_PROVIDER_ID=
 
 VERIFIER_SIGNER_ADDRESS=
 VERIFIER_SIGNER_PRIVATE_KEY=
 
-CLOUDFLARE_API_TOKEN=
-CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_API_TOKEN=(set in `.env`)
+CLOUDFLARE_ACCOUNT_ID=9925b5ec778ea3954dddc4cbe28ba127
 CLOUDFLARE_PAGES_PROJECT=0-waist
 ```
 

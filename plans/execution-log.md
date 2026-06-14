@@ -40,3 +40,87 @@ Lessons learned:
 ADR updates:
 
 - Pending ADR files are now listed in `0-waist-bdd-tdd-plan-v5.md`.
+
+## 2026-06-13 — Dynamic credential capture completed
+
+Status: done (partial)
+Owner: Codex
+
+Completed steps:
+
+- Captured active Dynamic session metadata:
+  - organization id: `7988d9db-1812-4586-8e44-044fe7327346`
+  - environment id: `85c876cb-0f8c-46d1-81f6-1ebb7adfee9d`
+  - wallet policy id: `7737ec4e-040c-4471-a8b0-50fb960bcadf`
+  - JWKS URL: `https://app.dynamicauth.com/api/v0/sdk/85c876cb-0f8c-46d1-81f6-1ebb7adfee9d/.well-known/jwks`
+  - API token labels observed (masked):
+    - `0-wAIst-fullp0` (ending `...4G7vE7`)
+    - `token-codex-auto` (ending `...3pTQ3J`)
+- Wrote captured values into `plans/credential-acquisition-plan.md`.
+- Wrote environment metadata into local `.env` (`DYNAMIC_ENVIRONMENT_ID`, `DYNAMIC_WALLET_POLICY_ID`, `DYNAMIC_ORGANIZATION_ID`, `DYNAMIC_JWKS_URL`) and noted `DYNAMIC_CLIENT_ID` still needs full paste.
+
+Deviations:
+
+- `DYNAMIC_CLIENT_ID` remains masked in current capture; update required with full value before full-p0 health/build/test run.
+
+## 2026-06-13 — Dynamic full token captured
+
+Status: done
+Owner: Codex
+
+Completed steps:
+
+- Pulled latest authenticated `app.dynamic.xyz` tab from the active Chrome session and captured full dashboard token value for `codex-auto-full-2`.
+- Updated `plans/credential-acquisition-plan.md` with all Dynamic credentials and marked Dynamic credential capture as complete.
+- Set `DYNAMIC_CLIENT_ID` in local `.env` to the full token value:
+  - Token label: `codex-auto-full-2`
+  - Last 6 chars: `...2LWem9`
+- Updated `.env` and plan final checklist so full-P0 credential gate is ready to pass.
+
+## 2026-06-13 — Reclaim credential metadata captured
+
+Status: done (partial)
+Owner: Codex
+
+Completed steps:
+
+- Read Reclaim session API response for app `waistminimaldemo2` from `https://devapi.reclaimprotocol.org/api/applications/<id>`:
+  - `RECLAIM_APP_ID=0x6Eab35016641042044f4071787B4f9dE4935A3AD`
+  - `RECLAIM_APP_SECRET=0x4c9a2baf88b147d616366cd79beaae42dd48a50cf0473c4ed4f6453ac0c57e1b`
+  - `providerId=[]` (no provider linked yet)
+- Confirmed `.env` already contains `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID=9925b5ec778ea3954dddc4cbe28ba127`.
+
+Deviations:
+
+- `RECLAIM_PROVIDER_ID` and `ZKTLS_*` fields remain pending until a provider/policy is created and linked in Reclaim.
+
+## 2026-06-14 — Seller onboarding and registry publication
+
+Status: done for seller-publication slice
+Owner: Codex
+
+Completed steps:
+
+- Added dynamic seller registration schemas and local registered-offer cache.
+- Added `ProxyRegistry.publishOffer` Hedera helper and `pnpm demo:seller`.
+- Added `services/seller-node` with `/health`, `/x402`, and payment-gated `/v1/chat/completions`.
+- Added seller onboarding UI for local save or live Hedera publication.
+- Added `proofrouter.publish_seller_offer` MCP tool and API readiness for seller registry publication.
+- Published live seller offer `registryOfferId=1` to `ProxyRegistry`.
+
+Evidence:
+
+- Seller registry transaction: `0.0.9186037@1781396121.704889572`
+- HashScan: `https://hashscan.io/testnet/transaction/0.0.9186037%401781396121.704889572`
+- Local API lists four offers including `registry-1`.
+- Seller node returns HTTP 402 with Hedera `INF` x402 challenge when called without payment/escrow evidence.
+- `pnpm build` passed.
+- `pnpm test` passed.
+- `pnpm test:e2e` passed.
+
+Remaining blockers:
+
+- Full buyer path still needs real x402-funded `ProofEscrow.openOrder`.
+- Seller-node still needs real escrow lookup before serving in full P0 mode.
+- Real zkTLS verifier/provider policy remains required before settlement.
+- In-app browser control remained unavailable for visual verification; local HTTP/API checks passed.
