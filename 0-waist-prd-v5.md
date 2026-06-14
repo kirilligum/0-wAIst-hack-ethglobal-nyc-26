@@ -26,7 +26,7 @@ Current branch: `codex/full-p0-continuation`
 - [x] Dynamic registered-offer marketplace cache, shared by API, MCP, demo script, and frontend.
 - [x] Live seller offer publication through `ProxyRegistry.publishOffer`; registry offer `1`, transaction `0.0.9186037@1781396121.704889572`.
 - [x] Seller onboarding frontend panel for local-save or Hedera publish, with pricing, endpoint, account, and HashScan result state.
-- [x] Seller-node service exposing `/health`, `/x402`, and OpenAI-compatible `/v1/chat/completions` guarded by payment/escrow evidence.
+- [x] Seller-node service exposing `/health`, `/x402`, and OpenAI-compatible `/v1/chat/completions` guarded by structured escrow evidence headers.
 - [x] Quick Buy deterministic cheapest compatible seller selection.
 - [x] Router Agent selection through a real OpenAI LLM call when `mode=router-agent`.
 - [x] Real OpenAI Responses API answer generation from the server.
@@ -40,7 +40,10 @@ Current branch: `codex/full-p0-continuation`
 - [x] Live API order audit transaction visible on HashScan: `0.0.9186037@1781386460.953715803`.
 - [x] Live HFS manifest refresh transaction visible on HashScan: `0.0.9186037@1781389738.626703938`.
 - [x] Minimal Vite frontend showing prompt input, mode, budget, selected route, proof/payment status, answer, seller candidates, timeline, and HashScan action.
+- [x] Frontend can prepare a `ProofEscrow.openOrder` x402 escrow transaction for sellers with numeric `registryOfferId`.
 - [x] Frontend/API Hedera action readiness for INF, contracts, x402 escrow, seller registry publication, refund schedule, and batch settlement.
+- [x] Hedera SDK helper to ABI-encode, build, and submit `ProofEscrow.openOrder(offerId, promptHash, requestHash, deadline)`.
+- [x] ProofRouter HTTP/MCP path prepares `ProofEscrow.openOrder` calldata and blocks live submission until the configured signer is confirmed as the buyer wallet.
 - [x] Hedera SDK helper to create a scheduled transaction targeting `ProofEscrow.refundExpired(orderId)`.
 - [x] Hedera SDK helper to build/submit a native batch containing `ProofEscrow.settle` and a hash-only HCS receipt message.
 - [x] Hedera Agent Kit package import/readiness wired through `@hashgraph/hedera-agent-kit` core plugins.
@@ -73,8 +76,9 @@ Current branch: `codex/full-p0-continuation`
 - [x] HTS `INF` creation.
 - [x] Hedera EVM contract deployment.
 - [x] Seller offer publication into `ProxyRegistry`.
+- [x] `ProofEscrow.openOrder` transaction builder and ProofRouter preparation path.
 - [ ] Buyer/seller INF association and funding through the real wallet path.
-- [ ] Real contract calls for order open, settlement, and refund.
+- [ ] Live buyer-wallet contract call for order open, plus live settlement and refund execution.
 - [ ] Dynamic wallet login/delegated policy.
 - [ ] Hedera x402 INF escrow funding.
 - [x] Local verifier placeholder signing path.

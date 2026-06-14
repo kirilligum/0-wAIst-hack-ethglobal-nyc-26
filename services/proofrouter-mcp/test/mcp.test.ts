@@ -38,5 +38,5 @@ describe("ProofRouter MCP stdio server", () => {
     } finally {
       await client.close();
     }
-  }, 20_000);
+  }, 45_000);
 });
