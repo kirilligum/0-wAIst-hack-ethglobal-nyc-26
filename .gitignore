@@ -1,0 +1,14 @@
+.aider*
+.env
+node_modules/
+dist/
+.vite/
+coverage/
+playwright-report/
+test-results/
+runs/
+.local/
+*.log
+.wrangler/
+.playwright-cli/
+apps/web/dist/

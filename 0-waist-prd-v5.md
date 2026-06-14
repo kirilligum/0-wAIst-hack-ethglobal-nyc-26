@@ -11,6 +11,97 @@
 
 ---
 
+## Implementation status — 2026-06-14
+
+Current branch: `codex/full-p0-continuation`
+
+### Built
+
+- [x] pnpm workspace skeleton with TypeScript packages, service, Vite frontend, demo scripts, and static forbidden-pattern check.
+- [x] Shared schemas for offers, orders, receipts, tools, traces, and prompt history.
+- [x] Shared hash, redaction, and AES-GCM local encryption helpers.
+- [x] ProofRouter service with one shared `executeInferenceOrder` workflow for Quick Buy and Router Agent.
+- [x] ProofRouter MCP stdio server using the official MCP TypeScript SDK, with real protocol smoke coverage.
+- [x] Seeded Alpha/Beta/Gamma seller offers.
+- [x] Dynamic registered-offer marketplace cache, shared by API, MCP, demo script, and frontend.
+- [x] Live seller offer publication through `ProxyRegistry.publishOffer`; registry offer `1`, transaction `0.0.9186037@1781396121.704889572`.
+- [x] Seller onboarding frontend panel for local-save or Hedera publish, with pricing, endpoint, account, and HashScan result state.
+- [x] Seller-node service exposing `/health`, `/x402`, and OpenAI-compatible `/v1/chat/completions` guarded by structured escrow evidence headers.
+- [x] Quick Buy deterministic cheapest compatible seller selection.
+- [x] Router Agent selection through a real OpenAI LLM call when `mode=router-agent`.
+- [x] Real OpenAI Responses API answer generation from the server.
+- [x] Hedera SDK helpers for HCS audit topic creation, hash-only HCS message submission, HFS manifest creation/read, and HashScan links.
+- [x] Live Hedera Testnet HCS topic `0.0.9226268`.
+- [x] Live Hedera Testnet HFS market manifest `0.0.9226269`.
+- [x] Live Hedera Testnet HTS `INF` token `0.0.9226625`.
+- [x] Live Hedera Testnet contracts: `ProxyRegistry` `0.0.9226646`, `ProofEscrow` `0.0.9229559`, `VerifierRegistry` `0.0.9226643`. `ProofEscrow` was redeployed with automatic INF token association after the earlier `0.0.9226648` escrow could not receive HTS `INF`.
+- [x] Local verifier EVM signer generated into ignored `.env` and approved in live `VerifierRegistry`; approval transaction `0.0.9186037@1781391308.700334793`.
+- [x] Local verifier placeholder now signs `ProofEscrow`-compatible `VerifiedReceipt` payloads while Chainlink CRE login is blocked. This is executable demo evidence, not trusted CRE completion evidence.
+- [x] Live API order audit transaction visible on HashScan: `0.0.9186037@1781386460.953715803`.
+- [x] Live HFS manifest refresh transaction visible on HashScan: `0.0.9186037@1781389738.626703938`.
+- [x] Minimal Vite frontend showing prompt input, mode, budget, selected route, proof/payment status, answer, seller candidates, timeline, and HashScan action.
+- [x] Frontend can prepare a `ProofEscrow.openOrder` x402 escrow transaction for sellers with numeric `registryOfferId`.
+- [x] Frontend/API Hedera action readiness for INF, contracts, x402 escrow, seller registry publication, refund schedule, and batch settlement.
+- [x] Frontend/API read-only Mirror Node diagnostics for buyer/seller INF association, buyer INF balance, and ProofEscrow INF allowance.
+- [x] Guarded Hedera SDK/API/MCP/UI action to approve a bounded buyer INF allowance for `ProofEscrow`.
+- [x] Live buyer INF allowance approval for `ProofEscrow` `0.0.9229559`: `0.0.9186037@1781417880.417636264`.
+- [x] Hedera SDK helper to ABI-encode, build, and submit `ProofEscrow.openOrder(offerId, promptHash, requestHash, deadline)`.
+- [x] ProofRouter HTTP/MCP path prepares `ProofEscrow.openOrder` calldata and blocks live submission until the configured signer is confirmed as the buyer wallet.
+- [x] Live `ProofEscrow.openOrder` succeeded for registry offer `1`, escrow order `1`, transaction `0.0.9186037@1781417935.795490344`.
+- [x] Seller-node accepted the funded escrow evidence and completed a real OpenAI-compatible seller proxy call.
+- [x] Hedera SDK helper to create a scheduled transaction targeting `ProofEscrow.refundExpired(orderId)`.
+- [x] Live Hedera Scheduled Transaction created for funded escrow order `1`: schedule `0.0.9229938`, transaction `0.0.9186037@1781421835.290442554`.
+- [x] Hedera SDK helper to build/submit a native batch containing `ProofEscrow.settle` and a hash-only HCS receipt message.
+- [x] Hedera Agent Kit package import/readiness wired through `@hashgraph/hedera-agent-kit` core plugins.
+- [x] Demo scripts: `pnpm demo:deploy`, `pnpm demo:verifier`, `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm test:e2e`, `pnpm mcp`.
+- [x] Solidity contract source for `ProxyRegistry`, `ProofEscrow`, and `VerifierRegistry`, including INF locking, verifier-gated settlement, and only `refundExpired` for timeout.
+
+### Verified
+
+- [x] `pnpm build` passes.
+- [x] `pnpm test` passes.
+- [x] `pnpm test:e2e` passes.
+- [x] Real OpenAI smoke ran through `pnpm demo:judge`.
+- [x] `pnpm demo:seed` creates visible Hedera Testnet HCS activity.
+- [x] `pnpm demo:seller` publishes a live seller offer to `ProxyRegistry` and stores the local marketplace cache.
+- [x] `pnpm demo:deploy` creates/loads HTS `INF` and deploys the three Hedera EVM contracts.
+- [x] Local API order endpoint submits hash-only HCS audit messages and returns HashScan links.
+- [x] `pnpm demo:health` passes for the placeholder demo path with `trustedCreReady=false`, Dynamic/x402/scheduled refund ready, local verifier placeholder ready, and trusted Chainlink CRE fields still listed under `trustBlockedBy`.
+
+### Minimal scanner demo
+
+- [x] Frontend running locally at `http://localhost:5173`.
+- [x] API running locally at `http://localhost:8787`.
+- [x] Seller node running locally at `http://localhost:8790`.
+- [x] Real OpenAI call path working.
+- [x] Real Hedera Testnet scanner activity working.
+- [x] Real seller registry activity working.
+- [x] Real scheduled refund transaction creation visible on HashScan: `https://hashscan.io/testnet/transaction/0.0.9186037%401781421835.290442554`.
+
+### Not yet complete for full P0
+
+- [x] HTS `INF` creation.
+- [x] Hedera EVM contract deployment.
+- [x] Seller offer publication into `ProxyRegistry`.
+- [x] `ProofEscrow.openOrder` transaction builder and ProofRouter preparation path.
+- [x] Read-only Mirror Node validation for buyer/seller INF association and buyer ProofEscrow allowance.
+- [x] Guarded buyer INF allowance approval transaction helper for `ProofEscrow`.
+- [x] Live buyer-wallet `ProofEscrow.openOrder` call with HTS `INF` locked in escrow.
+- [ ] Dynamic/x402 facilitator execution path around the live buyer-wallet contract call.
+- [ ] Live settlement and refund execution.
+- [ ] Dynamic wallet login/delegated policy.
+- [ ] Hedera x402 INF escrow funding.
+- [x] Local verifier placeholder signing path.
+- [ ] Trusted Chainlink CRE / real zkTLS verifier integration, deferred until CRE deploy access, workflow, Reclaim provider, and Sepolia receiver/target exist.
+- [ ] Real zkTLS provider proof policy wired to the trusted verifier path.
+- [x] Hedera Scheduled Transaction creation for a real funded order.
+- [ ] Scheduled refund execution after the scheduled expiry.
+- [ ] Native Hedera batch settlement execution plus HCS receipt for a real verified receipt.
+- [x] Hedera Agent Kit package and core plugin readiness wiring.
+- [ ] Cloudflare Pages deployment credentials and project publish.
+
+---
+
 ## 0. Lean implementation doctrine
 
 Codex must optimize for a small, maintainable, robust codebase.
@@ -38,13 +129,17 @@ Codex must optimize for a small, maintainable, robust codebase.
 | Decision | Locked choice | Consequence |
 |---|---|---|
 | 1A | Live scheduled refund execution in P0 | Use one timeout function: `ProofEscrow.refundExpired(orderId)`. Create and demonstrate a Hedera Scheduled Transaction targeting it. No `expireOrder`; no manual-refund demo path. |
-| 2A | Native Hedera batch settlement in P0 | `ProofEscrow.settle(...)` and HCS receipt log must be submitted as one Hedera Batch Transaction. No sequential product path. |
+| 2A | One CRE-selected settlement shell in P0 | The current Hedera Batch helper supports the placeholder demo path while CRE is unavailable. Current CRE discovery says Hedera is not directly listed as a supported workflow chain, so the later trusted path is Sepolia CRE settlement plus Hedera HCS/HFS audit unless CRE Hedera support changes. Do not keep duplicate settlement shells live. |
 | 3A | HTS `INF` token for P0 escrow and Quick Buy | `INF` is the only product settlement asset. HBAR is only for fees/gas. |
 | 4A | Real zkTLS mandatory in P0 | End-to-end settlement requires real zkTLS proof verification. No demo verifier/stub path. |
 | 5A | Full Hedera x402 Quick Buy in P0 | Quick Buy uses real `402 Payment Required` and Hedera x402 with `INF`; the x402 payment funds `ProofEscrow`, not final seller payment. |
 | 6A | Live Dynamic/Fireblocks wallet in P0 | User UI uses Dynamic wallet infrastructure and bounded delegated agent spending. No alternate live wallet path. |
 | 7A | Real MCP server in P0 | Product actions go through a real `proofrouter-mcp` server. No HTTP-only tool substitute. |
 | 8A | Local encrypted prompt-history viewer in P0 | Dashboard shows local encrypted prompt history with summaries and redaction controls. |
+
+Temporary execution note, 2026-06-14: Chainlink CRE deploy access is requested but not enabled, no CRE workflow exists, Reclaim has no provider configured, and Hedera is not directly listed as a CRE-supported workflow chain. Until the Sepolia CRE settlement path in `plans/sepolia-cre-settlement-hedera-audit-plan.md` is implemented, the executable demo path may use the approved local verifier placeholder to sign `ProofEscrow`-compatible receipts. `pnpm demo:health` must label this as `local-verifier-placeholder` with `trustedCreReady=false`; it must not claim trusted CRE / real zkTLS completion or direct CRE-to-Hedera settlement.
+
+This note supersedes older native-Hedera-batch settlement wording for trusted CRE completion. Hedera remains the audit and manifest layer; Sepolia is the planned CRE-supported settlement chain unless Chainlink CRE later exposes direct Hedera workflow support.
 
 Allowed test doubles:
 
