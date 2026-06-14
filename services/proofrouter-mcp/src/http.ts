@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import express, { type Express } from "express";
 import { OrderRequestSchema } from "@0waist/schemas";
 import { errorResponse } from "./errors.js";
+import { createLocalVerifierReceipt } from "./localVerifier.js";
 import { listProxyOffers } from "./offers.js";
 import { readPromptHistory } from "./promptHistory.js";
 import { registerSellerOffer } from "./sellerRegistration.js";
@@ -38,6 +39,16 @@ export function createApp(): Express {
 
   app.get("/api/hedera-actions", (_request, response) => {
     response.json(getHederaActionStatus());
+  });
+
+  app.post("/api/verifier/local-receipt", async (request, response) => {
+    try {
+      const result = await createLocalVerifierReceipt(request.body);
+      response.status(result.status === "blocked" ? 409 : 200).json(result);
+    } catch (error) {
+      const { statusCode, body } = errorResponse(error);
+      response.status(statusCode).json(body);
+    }
   });
 
   app.get("/api/offers", (_request, response) => {

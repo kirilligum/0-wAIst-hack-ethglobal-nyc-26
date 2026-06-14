@@ -48,15 +48,18 @@ export interface HederaActionStatus {
     creProof: {
       ready: boolean;
       missing: string[];
+      mode: string;
       workflowId?: string;
       donId?: string;
       gatewayUrl?: string;
       target?: string;
+      blockedTrust: string[];
     };
     creSettlement: {
       ready: boolean;
       missing: string[];
       shell: string;
+      mode: string;
       requiredActions: string[];
     };
     sellerRegistry: { ready: boolean; missing: string[] };

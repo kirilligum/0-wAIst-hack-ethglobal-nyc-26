@@ -17,6 +17,8 @@ describe("Hedera action status", () => {
       X402_FACILITATOR_URL: "https://api.testnet.blocky402.com",
       X402_NETWORK: "hedera-testnet",
       X402_PAYMENT_ASSET: "INF",
+      VERIFIER_SIGNER_ADDRESS: "0x14791697260E4c9A71f18484C9f997B308e59325",
+      VERIFIER_SIGNER_PRIVATE_KEY: "0x0123456789012345678901234567890123456789012345678901234567890123",
       SELLER_EVM_ADDRESS: "0x726a206d0b66730454e175a34bcf9f9fbc086458"
     });
 
@@ -24,10 +26,11 @@ describe("Hedera action status", () => {
     expect(status.prerequisites.inf.ready).toBe(true);
     expect(status.actions.createRefundSchedule.ready).toBe(true);
     expect(status.actions.openOrderViaX402.ready).toBe(true);
-    expect(status.actions.submitProofToCre.ready).toBe(false);
-    expect(status.actions.submitProofToCre.missing).toContain("RECLAIM_PROVIDER_ID");
-    expect(status.actions.settleFromCreReport.ready).toBe(false);
-    expect(status.actions.settleFromCreReport.missing).toContain("CRE_SETTLEMENT_SHELL");
+    expect(status.actions.submitProofToCre.ready).toBe(true);
+    expect(status.prerequisites.creProof.mode).toBe("local-verifier-placeholder");
+    expect(status.prerequisites.creProof.blockedTrust).toContain("CRE_WORKFLOW_ID");
+    expect(status.actions.settleFromCreReport.ready).toBe(true);
+    expect(status.actions.settleFromCreReport.shell).toBe("local-verifier-batch-placeholder");
     expect(status.actions.publishSellerOffer.ready).toBe(true);
   });
 });

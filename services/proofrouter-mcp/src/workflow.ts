@@ -29,6 +29,20 @@ function makeOrderId(): string {
   return `order-${Date.now().toString(36)}-${randomUUID().slice(0, 8)}`;
 }
 
+function proofStatusForEnv(env: NodeJS.ProcessEnv): string {
+  if (env.CRE_WORKFLOW_ID && env.CRE_DON_ID) {
+    return "Provider response hash recorded; Chainlink CRE zkTLS report configuration is present.";
+  }
+  if (
+    env.VERIFIER_SIGNER_ADDRESS
+    && env.VERIFIER_SIGNER_PRIVATE_KEY
+    && (env.VERIFIER_REGISTRY_CONTRACT_ID || env.VERIFIER_REGISTRY_ADDRESS)
+  ) {
+    return "Provider response hash recorded; local verifier placeholder is configured while Chainlink CRE login is blocked.";
+  }
+  return "Provider response hash recorded; proof verification is blocked.";
+}
+
 function buildQuickBuyDecision(selectedOffer: Offer, offers: Offer[]): RouteDecision {
   return {
     mode: "quick-buy",
@@ -176,7 +190,7 @@ export async function executeInferenceOrder(
     responseHash,
     traceDir: "",
     hederaAudit,
-    proofStatus: "Provider response hash recorded; Chainlink CRE zkTLS report is still blocked.",
+    proofStatus: proofStatusForEnv(env),
     paymentStatus: hederaAudit.status === "submitted"
       ? "Hash-only Hedera audit submitted; x402 INF escrow is still blocked."
       : `Hedera audit blocked: ${hederaAudit.missing.join(", ")}`,

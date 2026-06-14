@@ -82,6 +82,11 @@ export default function App() {
     if (!result) return null;
     return offers.find((offer) => offer.offerId === result.selectedOffer.offerId) ?? result.selectedOffer;
   }, [offers, result]);
+  const verificationMode = hederaActions?.prerequisites.creProof.mode;
+  const verifierLabel = verificationMode === "local-verifier-placeholder" ? "Local verifier" : "CRE proof";
+  const reportLabel = verificationMode === "local-verifier-placeholder" ? "Receipt" : "CRE report";
+  const settleLabel = verificationMode === "local-verifier-placeholder" ? "Settle" : "CRE settle";
+  const auditLabel = verificationMode === "local-verifier-placeholder" ? "Proof audit" : "CRE audit";
 
   async function runOrder() {
     setLoading(true);
@@ -244,19 +249,19 @@ export default function App() {
             </div>
             <div className={hederaActions.actions.submitProofToCre.ready ? "action-chip ready" : "action-chip blocked-chip"}>
               <ShieldCheck size={16} />
-              CRE proof
+              {verifierLabel}
             </div>
             <div className={hederaActions.actions.waitForCreReport.ready ? "action-chip ready" : "action-chip blocked-chip"}>
               <BadgeCheck size={16} />
-              CRE report
+              {reportLabel}
             </div>
             <div className={hederaActions.actions.settleFromCreReport.ready ? "action-chip ready" : "action-chip blocked-chip"}>
               <Route size={16} />
-              CRE settle
+              {settleLabel}
             </div>
             <div className={hederaActions.actions.logCreSettlementAudit.ready ? "action-chip ready" : "action-chip blocked-chip"}>
               <Activity size={16} />
-              CRE audit
+              {auditLabel}
             </div>
             <div className={hederaActions.actions.publishSellerOffer.ready ? "action-chip ready" : "action-chip blocked-chip"}>
               <Store size={16} />

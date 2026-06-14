@@ -11,6 +11,7 @@ import {
   readMarketManifest
 } from "@0waist/hedera";
 import { getCheapestCompatibleOffer, listProxyOffers } from "./offers.js";
+import { createLocalVerifierReceipt } from "./localVerifier.js";
 import { readPromptHistory } from "./promptHistory.js";
 import { registerSellerOffer } from "./sellerRegistration.js";
 import { getHederaActionStatus, PROOFROUTER_TOOLS } from "./tools.js";
@@ -214,9 +215,23 @@ export function createProofRouterMcpServer(env: NodeJS.ProcessEnv = process.env)
     annotations: { readOnlyHint: false, openWorldHint: true }
   }, (input) => guardedTool(async () => await registerSellerOffer(input, env)));
 
+  server.registerTool("proofrouter.submit_proof_to_cre", {
+    description: "Submit proof to CRE when configured, or sign a local verifier placeholder receipt while CRE is unavailable.",
+    inputSchema: {
+      orderId: z.number().int().positive(),
+      requestHash: z.string().min(64),
+      responseHash: z.string().min(64),
+      modelId: z.string().min(1),
+      inputTokens: z.number().int().nonnegative(),
+      outputTokens: z.number().int().nonnegative(),
+      proofEscrowContractIdOrAddress: z.string().min(1).optional(),
+      chainId: z.number().int().positive().optional()
+    },
+    annotations: { readOnlyHint: false, openWorldHint: false }
+  }, (input) => guardedTool(async () => await createLocalVerifierReceipt(input, env)));
+
   const blockedLiveTools = [
     "proofrouter.call_seller_proxy",
-    "proofrouter.submit_proof_to_cre",
     "proofrouter.wait_for_cre_report",
     "proofrouter.settle_from_cre_report",
     "proofrouter.log_cre_settlement_audit",

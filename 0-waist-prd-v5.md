@@ -36,12 +36,14 @@ Current branch: `codex/full-p0-continuation`
 - [x] Live Hedera Testnet HTS `INF` token `0.0.9226625`.
 - [x] Live Hedera Testnet contracts: `ProxyRegistry` `0.0.9226646`, `ProofEscrow` `0.0.9226648`, `VerifierRegistry` `0.0.9226643`.
 - [x] Local verifier EVM signer generated into ignored `.env` and approved in live `VerifierRegistry`; approval transaction `0.0.9186037@1781391308.700334793`.
+- [x] Local verifier placeholder now signs `ProofEscrow`-compatible `VerifiedReceipt` payloads while Chainlink CRE login is blocked. This is executable demo evidence, not trusted CRE completion evidence.
 - [x] Live API order audit transaction visible on HashScan: `0.0.9186037@1781386460.953715803`.
 - [x] Live HFS manifest refresh transaction visible on HashScan: `0.0.9186037@1781389738.626703938`.
 - [x] Minimal Vite frontend showing prompt input, mode, budget, selected route, proof/payment status, answer, seller candidates, timeline, and HashScan action.
 - [x] Frontend/API Hedera action readiness for INF, contracts, x402 escrow, seller registry publication, refund schedule, and batch settlement.
 - [x] Hedera SDK helper to create a scheduled transaction targeting `ProofEscrow.refundExpired(orderId)`.
 - [x] Hedera SDK helper to build/submit a native batch containing `ProofEscrow.settle` and a hash-only HCS receipt message.
+- [x] Hedera Agent Kit package import/readiness wired through `@hashgraph/hedera-agent-kit` core plugins.
 - [x] Demo scripts: `pnpm demo:deploy`, `pnpm demo:verifier`, `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm test:e2e`, `pnpm mcp`.
 - [x] Solidity contract source for `ProxyRegistry`, `ProofEscrow`, and `VerifierRegistry`, including INF locking, verifier-gated settlement, and only `refundExpired` for timeout.
 
@@ -55,7 +57,7 @@ Current branch: `codex/full-p0-continuation`
 - [x] `pnpm demo:seller` publishes a live seller offer to `ProxyRegistry` and stores the local marketplace cache.
 - [x] `pnpm demo:deploy` creates/loads HTS `INF` and deploys the three Hedera EVM contracts.
 - [x] Local API order endpoint submits hash-only HCS audit messages and returns HashScan links.
-- [x] `pnpm demo:health` reports `minimalDemo.ready=true` and fails full P0 for missing locked integrations.
+- [x] `pnpm demo:health` passes for the placeholder demo path with `trustedCreReady=false`, Dynamic/x402/scheduled refund ready, local verifier placeholder ready, and trusted Chainlink CRE fields still listed under `trustBlockedBy`.
 
 ### Minimal scanner demo
 
@@ -75,11 +77,12 @@ Current branch: `codex/full-p0-continuation`
 - [ ] Real contract calls for order open, settlement, and refund.
 - [ ] Dynamic wallet login/delegated policy.
 - [ ] Hedera x402 INF escrow funding.
-- [ ] Real zkTLS verifier integration.
-- [ ] Real zkTLS provider proof policy wired to the approved verifier signer.
+- [x] Local verifier placeholder signing path.
+- [ ] Trusted Chainlink CRE / real zkTLS verifier integration.
+- [ ] Real zkTLS provider proof policy wired to the trusted verifier path.
 - [ ] Scheduled refund execution for a real funded order.
 - [ ] Native Hedera batch settlement execution plus HCS receipt for a real verified receipt.
-- [ ] Hedera Agent Kit action wiring.
+- [x] Hedera Agent Kit package and core plugin readiness wiring.
 - [ ] Cloudflare Pages deployment credentials and project publish.
 
 ---
@@ -118,6 +121,8 @@ Codex must optimize for a small, maintainable, robust codebase.
 | 6A | Live Dynamic/Fireblocks wallet in P0 | User UI uses Dynamic wallet infrastructure and bounded delegated agent spending. No alternate live wallet path. |
 | 7A | Real MCP server in P0 | Product actions go through a real `proofrouter-mcp` server. No HTTP-only tool substitute. |
 | 8A | Local encrypted prompt-history viewer in P0 | Dashboard shows local encrypted prompt history with summaries and redaction controls. |
+
+Temporary execution note, 2026-06-14: Chainlink CRE login is blocked. Until that is unblocked, the executable demo path may use the approved local verifier placeholder to sign `ProofEscrow`-compatible receipts. `pnpm demo:health` must label this as `local-verifier-placeholder` with `trustedCreReady=false`; it must not claim trusted CRE / real zkTLS completion.
 
 Allowed test doubles:
 
