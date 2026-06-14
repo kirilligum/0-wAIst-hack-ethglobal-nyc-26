@@ -245,6 +245,19 @@ export interface OpenEscrowOrderResult {
   escrowEvidence?: unknown;
 }
 
+export interface RefundScheduleResult {
+  status: "submitted" | "blocked";
+  missing?: string[];
+  message: string;
+  schedule?: {
+    scheduleId: string;
+    transactionId: string;
+    hashScanUrl: string;
+    scheduledFunction: "refundExpired";
+    orderId: number;
+  };
+}
+
 export async function openEscrowOrder(input: {
   offerId: number;
   promptHash: string;
@@ -265,4 +278,22 @@ export async function openEscrowOrder(input: {
     throw new Error(apiError.error?.message ?? `Escrow order request failed with HTTP ${response.status}`);
   }
   return body as OpenEscrowOrderResult;
+}
+
+export async function createRefundSchedule(input: {
+  orderId: number;
+  confirmedFundedOrder: boolean;
+}): Promise<RefundScheduleResult> {
+  const response = await fetch(`${API_BASE_URL}/api/orders/refund-schedule`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input)
+  });
+
+  const body = await response.json();
+  if (!response.ok && body?.status !== "blocked") {
+    const apiError = body as ApiErrorBody;
+    throw new Error(apiError.error?.message ?? `Refund schedule request failed with HTTP ${response.status}`);
+  }
+  return body as RefundScheduleResult;
 }

@@ -15,6 +15,7 @@ import { Offer, OrderMode, OrderResult, SellerRegistrationResult } from "@0waist
 import {
   approveInfAllowance,
   ApproveInfAllowanceResult,
+  createRefundSchedule,
   createOrder,
   fetchHederaActionStatus,
   fetchInfWalletDiagnostics,
@@ -24,6 +25,7 @@ import {
   InfWalletDiagnostics,
   OpenEscrowOrderResult,
   registerSeller,
+  RefundScheduleResult,
   openEscrowOrder,
   setupHedera
 } from "./api.js";
@@ -61,6 +63,9 @@ export default function App() {
   const [escrowLoading, setEscrowLoading] = useState(false);
   const [escrowResult, setEscrowResult] = useState<OpenEscrowOrderResult | null>(null);
   const [escrowError, setEscrowError] = useState<string | null>(null);
+  const [refundScheduleLoading, setRefundScheduleLoading] = useState(false);
+  const [refundScheduleResult, setRefundScheduleResult] = useState<RefundScheduleResult | null>(null);
+  const [refundScheduleError, setRefundScheduleError] = useState<string | null>(null);
   const [allowanceLoading, setAllowanceLoading] = useState(false);
   const [allowanceResult, setAllowanceResult] = useState<ApproveInfAllowanceResult | null>(null);
   const [allowanceError, setAllowanceError] = useState<string | null>(null);
@@ -115,6 +120,8 @@ export default function App() {
       setResult(next);
       setEscrowResult(null);
       setEscrowError(null);
+      setRefundScheduleResult(null);
+      setRefundScheduleError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Order failed");
     } finally {
@@ -161,23 +168,51 @@ export default function App() {
     }
   }
 
-  async function prepareEscrowOrder() {
+  async function runEscrowOrder(submitOnChain: boolean) {
     if (!result || !selectedRegistryOfferId) {
       setEscrowError("Select a seller with an on-chain registry offer before preparing escrow.");
       return;
     }
     setEscrowLoading(true);
     setEscrowError(null);
+    setRefundScheduleResult(null);
+    setRefundScheduleError(null);
     try {
-      setEscrowResult(await openEscrowOrder({
+      const next = await openEscrowOrder({
         offerId: selectedRegistryOfferId,
         promptHash: result.promptHash,
-        requestHash: result.requestHash
-      }));
+        requestHash: result.requestHash,
+        submitOnChain,
+        confirmedBuyerSigner: submitOnChain
+      });
+      setEscrowResult(next);
+      if (next.status === "submitted") {
+        setInfWallets(await fetchInfWalletDiagnostics());
+      }
     } catch (err) {
       setEscrowError(err instanceof Error ? err.message : "Escrow order preparation failed");
     } finally {
       setEscrowLoading(false);
+    }
+  }
+
+  async function runRefundSchedule() {
+    const orderId = Number(escrowResult?.orderId);
+    if (!Number.isInteger(orderId) || orderId <= 0) {
+      setRefundScheduleError("Open a funded escrow order before scheduling a refund.");
+      return;
+    }
+    setRefundScheduleLoading(true);
+    setRefundScheduleError(null);
+    try {
+      setRefundScheduleResult(await createRefundSchedule({
+        orderId,
+        confirmedFundedOrder: true
+      }));
+    } catch (err) {
+      setRefundScheduleError(err instanceof Error ? err.message : "Refund scheduling failed");
+    } finally {
+      setRefundScheduleLoading(false);
     }
   }
 
@@ -615,15 +650,26 @@ export default function App() {
             )}
 
             <div className="escrow-status">
-              <button
-                className="secondary"
-                type="button"
-                disabled={escrowLoading || !result || !selectedRegistryOfferId}
-                onClick={() => void prepareEscrowOrder()}
-              >
-                {escrowLoading ? <LoaderCircle className="spin" size={18} /> : <CircleDollarSign size={18} />}
-                Prepare x402 escrow
-              </button>
+              <div className="escrow-actions">
+                <button
+                  className="secondary"
+                  type="button"
+                  disabled={escrowLoading || !result || !selectedRegistryOfferId}
+                  onClick={() => void runEscrowOrder(false)}
+                >
+                  {escrowLoading ? <LoaderCircle className="spin" size={18} /> : <CircleDollarSign size={18} />}
+                  Prepare x402 escrow
+                </button>
+                <button
+                  className="secondary"
+                  type="button"
+                  disabled={escrowLoading || !result || !selectedRegistryOfferId}
+                  onClick={() => void runEscrowOrder(true)}
+                >
+                  {escrowLoading ? <LoaderCircle className="spin" size={18} /> : <CircleDollarSign size={18} />}
+                  Open funded escrow
+                </button>
+              </div>
               {result && !selectedRegistryOfferId ? (
                 <div className="blocked">
                   <Store size={17} />
@@ -643,6 +689,34 @@ export default function App() {
                       <ExternalLink size={16} />
                       Open escrow transaction
                     </a>
+                  ) : null}
+                  {escrowResult.orderId ? <span>Order #{escrowResult.orderId}</span> : null}
+                </div>
+              ) : null}
+              {escrowResult?.orderId ? (
+                <div className="refund-schedule">
+                  <button
+                    className="secondary"
+                    type="button"
+                    disabled={refundScheduleLoading}
+                    onClick={() => void runRefundSchedule()}
+                  >
+                    {refundScheduleLoading ? <LoaderCircle className="spin" size={18} /> : <Activity size={18} />}
+                    Schedule refund
+                  </button>
+                  {refundScheduleError ? <p className="error">{refundScheduleError}</p> : null}
+                  {refundScheduleResult ? (
+                    <div className={refundScheduleResult.status === "blocked" ? "escrow-result blocked-text" : "escrow-result"}>
+                      <strong>{refundScheduleResult.status}</strong>
+                      <span>{refundScheduleResult.message}</span>
+                      {refundScheduleResult.schedule ? <span>Schedule {refundScheduleResult.schedule.scheduleId}</span> : null}
+                      {refundScheduleResult.schedule?.hashScanUrl ? (
+                        <a href={refundScheduleResult.schedule.hashScanUrl} target="_blank" rel="noreferrer">
+                          <ExternalLink size={16} />
+                          Open refund schedule transaction
+                        </a>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
               ) : null}

@@ -516,6 +516,12 @@ input {
   padding-top: 2px;
 }
 
+.escrow-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
 .escrow-result {
   display: grid;
   gap: 6px;
@@ -546,6 +552,12 @@ input {
 
 .blocked-text strong {
   color: #7a4215;
+}
+
+.refund-schedule {
+  display: grid;
+  gap: 9px;
+  padding-top: 2px;
 }
 
 .market {
@@ -701,6 +713,10 @@ input {
   }
 
   .wallet-action {
+    grid-template-columns: 1fr;
+  }
+
+  .escrow-actions {
     grid-template-columns: 1fr;
   }
 }

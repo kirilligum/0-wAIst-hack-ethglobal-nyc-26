@@ -12,6 +12,7 @@ import { openOrderViaX402 } from "./orderOpening.js";
 import { listProxyOffers } from "./offers.js";
 import { readPromptHistory } from "./promptHistory.js";
 import { registerSellerOffer } from "./sellerRegistration.js";
+import { createRefundScheduleForOrder } from "./refundSchedule.js";
 import { saveAndSeedHedera } from "./setup.js";
 import { getHederaActionStatus, PROOFROUTER_TOOLS } from "./tools.js";
 import { executeInferenceOrder } from "./workflow.js";
@@ -76,6 +77,16 @@ export function createApp(): Express {
   app.post("/api/orders/open-via-x402", async (request, response) => {
     try {
       const result = await openOrderViaX402(request.body);
+      response.status(result.status === "blocked" ? 409 : 200).json(result);
+    } catch (error) {
+      const { statusCode, body } = errorResponse(error);
+      response.status(statusCode).json(body);
+    }
+  });
+
+  app.post("/api/orders/refund-schedule", async (request, response) => {
+    try {
+      const result = await createRefundScheduleForOrder(request.body);
       response.status(result.status === "blocked" ? 409 : 200).json(result);
     } catch (error) {
       const { statusCode, body } = errorResponse(error);

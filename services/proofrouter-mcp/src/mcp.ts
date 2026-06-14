@@ -5,7 +5,6 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import * as z from "zod/v4";
 import {
-  createRefundSchedule,
   getSellerHistorySummary,
   loadHederaConfig,
   readMarketManifest
@@ -15,6 +14,7 @@ import { createLocalVerifierReceipt } from "./localVerifier.js";
 import { approveInfAllowanceForBuyer } from "./infAllowance.js";
 import { openOrderViaX402 } from "./orderOpening.js";
 import { readPromptHistory } from "./promptHistory.js";
+import { createRefundScheduleForOrder } from "./refundSchedule.js";
 import { registerSellerOffer } from "./sellerRegistration.js";
 import { getHederaActionStatus, PROOFROUTER_TOOLS } from "./tools.js";
 
@@ -186,24 +186,7 @@ export function createProofRouterMcpServer(env: NodeJS.ProcessEnv = process.env)
       confirmedFundedOrder: z.boolean().default(false)
     },
     annotations: { readOnlyHint: false, openWorldHint: true }
-  }, ({ orderId, confirmedFundedOrder }) => guardedTool(async () => {
-    const proofEscrow = env.PROOF_ESCROW_CONTRACT_ID ?? env.PROOF_ESCROW_ADDRESS;
-    if (!confirmedFundedOrder || !proofEscrow) {
-      return {
-        status: "blocked",
-        missing: proofEscrow ? ["confirmedFundedOrder"] : ["PROOF_ESCROW_CONTRACT_ID"],
-        message: "Refund scheduling requires a real funded ProofEscrow order."
-      };
-    }
-    return {
-      status: "submitted",
-      schedule: await createRefundSchedule({
-        config: loadHederaConfig(env),
-        proofEscrowContractIdOrAddress: proofEscrow,
-        orderId
-      })
-    };
-  }));
+  }, (input) => guardedTool(async () => await createRefundScheduleForOrder(input, env)));
 
   server.registerTool("proofrouter.publish_seller_offer", {
     description: "Publish a seller offer into ProxyRegistry.",
