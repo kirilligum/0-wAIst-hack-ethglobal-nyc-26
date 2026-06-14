@@ -1,3 +1,5 @@
+import { ZodError } from "zod";
+
 export class CredentialBlocker extends Error {
   readonly statusCode = 424;
 
@@ -23,6 +25,18 @@ export function errorResponse(error: unknown): {
           message: error.message,
           missing: error.missing,
           blockedFeature: error.blockedFeature
+        }
+      }
+    };
+  }
+
+  if (error instanceof ZodError) {
+    return {
+      statusCode: 400,
+      body: {
+        error: {
+          code: "invalid_request",
+          message: error.issues.map((issue) => issue.message).join("; ")
         }
       }
     };

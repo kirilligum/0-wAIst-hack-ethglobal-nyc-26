@@ -12,7 +12,9 @@ Implemented now:
 - Real OpenAI Responses API calls from the server.
 - Hedera Testnet HCS audit transaction submission when operator credentials and an audit topic are configured.
 - Hedera Testnet HTS `INF` token plus deployed `ProxyRegistry`, `ProofEscrow`, and `VerifierRegistry` contracts.
-- Hedera action readiness endpoint for INF, contracts, x402 escrow, refund schedule, and batch settlement.
+- Live seller offer publication into `ProxyRegistry`.
+- Seller-node service with x402 challenge and LiteLLM/OpenAI-compatible upstream call path.
+- Hedera action readiness endpoint for INF, contracts, x402 escrow, seller registry, refund schedule, and batch settlement.
 - HashScan links for submitted Hedera transactions.
 - Local redacted traces and encrypted prompt-history summaries.
 - Health checks that block full P0 claims until Hedera, Dynamic, x402, contracts, and zkTLS credentials are present.
@@ -26,6 +28,8 @@ Live Hedera Testnet demo artifacts:
 - ProofEscrow: `0.0.9226648`
 - VerifierRegistry: `0.0.9226643`
 - Approved verifier signer: `0xE4c0e0e7a00B6f9Cd64F177222CFC5fe010C8430`
+- Seller registry offer: `1`
+- Latest seller registry publish: [HashScan transaction](https://hashscan.io/testnet/transaction/0.0.9186037%401781396121.704889572)
 - Latest frontend/API-equivalent order audit: [HashScan transaction](https://hashscan.io/testnet/transaction/0.0.9186037%401781386460.953715803)
 - Latest manifest refresh: [HashScan transaction](https://hashscan.io/testnet/transaction/0.0.9186037%401781389738.626703938)
 - Latest verifier approval: [HashScan transaction](https://hashscan.io/testnet/transaction/0.0.9186037%401781391308.700334793)
@@ -101,8 +105,10 @@ pnpm test
 pnpm test:e2e
 pnpm demo:deploy
 pnpm demo:verifier
+pnpm demo:seller
 pnpm demo:seed
 pnpm demo:health
+pnpm dev:seller
 pnpm mcp
 ```
 
@@ -115,4 +121,4 @@ Current status: `minimalDemo.ready=true`; `fullP0.ready=false`.
 
 ## Out Of Scope For This Slice
 
-This slice does not claim completed Dynamic login, x402 INF funding, live ProofEscrow order calls, scheduled refund execution, native Hedera batch settlement execution, or real zkTLS verification. The SDK helpers and readiness checks for scheduled refund and batch settlement exist; live execution remains blocked until there is a real funded order and verified receipt.
+This slice does not claim completed Dynamic buyer-wallet funding, x402 INF escrow order opening, live ProofEscrow order settlement/refund, native Hedera batch settlement execution, or real zkTLS verification. Seller registry publication is live; live buyer payment and proof settlement remain blocked until there is a real funded order and verified receipt.

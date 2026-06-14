@@ -1,4 +1,4 @@
-import { Offer, OrderMode, OrderResult } from "@0waist/schemas";
+import { Offer, OrderMode, OrderResult, SellerRegistrationResult } from "@0waist/schemas";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
@@ -45,11 +45,13 @@ export interface HederaActionStatus {
     inf: { ready: boolean; missing: string[] };
     dynamic: { ready: boolean; missing: string[] };
     x402: { ready: boolean; missing: string[] };
+    sellerRegistry: { ready: boolean; missing: string[] };
   };
   actions: {
     openOrderViaX402: { ready: boolean; missing: string[]; tool: string };
     createRefundSchedule: { ready: boolean; missing: string[]; tool: string; requiredFunction: "refundExpired" };
     batchSettleAndLog: { ready: boolean; missing: string[]; tool: string; requiredActions: string[] };
+    publishSellerOffer: { ready: boolean; missing: string[]; tool: string };
   };
 }
 
@@ -99,4 +101,38 @@ export async function setupHedera(input: {
     throw new Error(apiError.error?.message ?? `Hedera setup failed with HTTP ${response.status}`);
   }
   return body as HederaSetupResult;
+}
+
+export async function registerSeller(input: {
+  sellerId: string;
+  displayName: string;
+  modelId: string;
+  provider: string;
+  inputPricePerMTokInf: number;
+  outputPricePerMTokInf: number;
+  fixedFeeInf: number;
+  maxBudgetInf: number;
+  maxInputTokens: number;
+  maxOutputTokens: number;
+  x402Endpoint: string;
+  hederaAccount: string;
+  sellerEvmAddress?: string;
+  summary: string;
+  publishOnChain: boolean;
+}): Promise<SellerRegistrationResult> {
+  const response = await fetch(`${API_BASE_URL}/api/seller/register`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input)
+  });
+
+  const body = await response.json();
+  if (!response.ok) {
+    if (body?.status === "blocked") {
+      return body as SellerRegistrationResult;
+    }
+    const apiError = body as ApiErrorBody;
+    throw new Error(apiError.error?.message ?? `Seller registration failed with HTTP ${response.status}`);
+  }
+  return body as SellerRegistrationResult;
 }

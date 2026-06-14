@@ -99,7 +99,7 @@ export async function executeInferenceOrder(
   const parsedRequest = OrderRequestSchema.parse(request);
   const env = deps.env ?? process.env;
   const llm = deps.llm ?? createOpenAiGateway(env);
-  const offers = listProxyOffers();
+  const offers = listProxyOffers(env);
   const modelId = env.OPENAI_MODEL ?? "gpt-4.1-mini";
   const createdAt = new Date().toISOString();
   const orderId = makeOrderId();
@@ -109,7 +109,7 @@ export async function executeInferenceOrder(
 
   const decision = parsedRequest.mode === "quick-buy"
     ? buildQuickBuyDecision(
-      getCheapestCompatibleOffer(parsedRequest.budgetInf, modelId),
+      getCheapestCompatibleOffer(parsedRequest.budgetInf, modelId, env),
       offers
     )
     : await buildRouterDecision({

@@ -1,4 +1,8 @@
-import { Offer, OfferListSchema } from "@0waist/schemas";
+import { existsSync, readFileSync } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { z } from "zod";
+import { Offer, OfferListSchema, OfferSchema } from "@0waist/schemas";
 
 export const SEEDED_OFFERS: Offer[] = OfferListSchema.parse([
   {
@@ -15,7 +19,8 @@ export const SEEDED_OFFERS: Offer[] = OfferListSchema.parse([
     active: true,
     x402Endpoint: "https://alpha.0waist.local/x402",
     hederaAccount: "0.0.5001",
-    summary: "Cheapest compatible seller for low-risk prompts."
+    summary: "Cheapest compatible seller for low-risk prompts.",
+    registryStatus: "seeded"
   },
   {
     offerId: "offer-beta-gpt41mini",
@@ -31,7 +36,8 @@ export const SEEDED_OFFERS: Offer[] = OfferListSchema.parse([
     active: true,
     x402Endpoint: "https://beta.0waist.local/x402",
     hederaAccount: "0.0.5002",
-    summary: "Balanced seller with recent successful audit history."
+    summary: "Balanced seller with recent successful audit history.",
+    registryStatus: "seeded"
   },
   {
     offerId: "offer-gamma-gpt41mini",
@@ -47,16 +53,64 @@ export const SEEDED_OFFERS: Offer[] = OfferListSchema.parse([
     active: true,
     x402Endpoint: "https://gamma.0waist.local/x402",
     hederaAccount: "0.0.5003",
-    summary: "Privacy-preferred seller for sensitive routing context."
+    summary: "Privacy-preferred seller for sensitive routing context.",
+    registryStatus: "seeded"
   }
 ]);
 
-export function listProxyOffers(): Offer[] {
-  return SEEDED_OFFERS;
+const RegisteredOfferListSchema = z.array(OfferSchema);
+
+export function registeredOffersPath(env: NodeJS.ProcessEnv = process.env): string {
+  if (env.REGISTERED_OFFERS_FILE) {
+    return resolve(process.cwd(), env.REGISTERED_OFFERS_FILE);
+  }
+  const workspaceRootFromPackage = resolve(process.cwd(), "../../pnpm-workspace.yaml");
+  return existsSync(workspaceRootFromPackage)
+    ? resolve(process.cwd(), "../../.local/seller-offers.json")
+    : resolve(process.cwd(), ".local/seller-offers.json");
 }
 
-export function getCheapestCompatibleOffer(budgetInf: number, modelId: string): Offer {
-  const offer = SEEDED_OFFERS
+export function readRegisteredOffers(env: NodeJS.ProcessEnv = process.env): Offer[] {
+  const path = registeredOffersPath(env);
+  if (!existsSync(path)) {
+    return [];
+  }
+  const parsed = JSON.parse(readFileSync(path, "utf8"));
+  return RegisteredOfferListSchema.parse(parsed);
+}
+
+function mergeOffers(offers: Offer[]): Offer[] {
+  const byId = new Map<string, Offer>();
+  for (const offer of offers) {
+    byId.set(offer.offerId, offer);
+  }
+  return [...byId.values()];
+}
+
+export function listProxyOffers(env: NodeJS.ProcessEnv = process.env): Offer[] {
+  return OfferListSchema.parse(mergeOffers([...SEEDED_OFFERS, ...readRegisteredOffers(env)]));
+}
+
+export async function upsertRegisteredOffer(
+  offer: Offer,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<Offer[]> {
+  const path = registeredOffersPath(env);
+  const offers = mergeOffers([
+    ...readRegisteredOffers(env).filter((candidate) => candidate.offerId !== offer.offerId),
+    OfferSchema.parse(offer)
+  ]);
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, `${JSON.stringify(offers, null, 2)}\n`, "utf8");
+  return offers;
+}
+
+export function getCheapestCompatibleOffer(
+  budgetInf: number,
+  modelId: string,
+  env: NodeJS.ProcessEnv = process.env
+): Offer {
+  const offer = listProxyOffers(env)
     .filter((candidate) => candidate.active)
     .filter((candidate) => candidate.modelId === modelId)
     .filter((candidate) => candidate.fixedFeeInf <= budgetInf)

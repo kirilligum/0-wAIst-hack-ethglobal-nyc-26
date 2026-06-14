@@ -8,15 +8,17 @@ import {
   Route,
   Send,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  Store
 } from "lucide-react";
-import { Offer, OrderMode, OrderResult } from "@0waist/schemas";
+import { Offer, OrderMode, OrderResult, SellerRegistrationResult } from "@0waist/schemas";
 import {
   createOrder,
   fetchHederaActionStatus,
   fetchOffers,
   HederaActionStatus,
   HederaSetupResult,
+  registerSeller,
   setupHedera
 } from "./api.js";
 
@@ -45,6 +47,27 @@ export default function App() {
   const [setupResult, setSetupResult] = useState<HederaSetupResult | null>(null);
   const [setupError, setSetupError] = useState<string | null>(null);
   const [hederaActions, setHederaActions] = useState<HederaActionStatus | null>(null);
+  const [sellerOpen, setSellerOpen] = useState(false);
+  const [sellerLoading, setSellerLoading] = useState(false);
+  const [sellerResult, setSellerResult] = useState<SellerRegistrationResult | null>(null);
+  const [sellerError, setSellerError] = useState<string | null>(null);
+  const [sellerForm, setSellerForm] = useState({
+    sellerId: "local-seller",
+    displayName: "Local Seller Proxy",
+    modelId: "gpt-4.1-mini",
+    provider: "openai-compatible",
+    inputPricePerMTokInf: 0.05,
+    outputPricePerMTokInf: 0.12,
+    fixedFeeInf: 0.01,
+    maxBudgetInf: 0.5,
+    maxInputTokens: 32000,
+    maxOutputTokens: 4000,
+    x402Endpoint: "http://localhost:8790/x402",
+    hederaAccount: "",
+    sellerEvmAddress: "",
+    summary: "Local seller proxy registered for the live Hedera demo.",
+    publishOnChain: true
+  });
 
   useEffect(() => {
     fetchOffers()
@@ -89,6 +112,26 @@ export default function App() {
       setSetupError(err instanceof Error ? err.message : "Hedera setup failed");
     } finally {
       setSetupLoading(false);
+    }
+  }
+
+  async function runSellerRegistration() {
+    setSellerLoading(true);
+    setSellerError(null);
+    try {
+      const next = await registerSeller({
+        ...sellerForm,
+        sellerEvmAddress: sellerForm.sellerEvmAddress.trim() || undefined,
+        hederaAccount: sellerForm.hederaAccount.trim()
+      });
+      setSellerResult(next);
+      if (next.status !== "blocked") {
+        setOffers(await fetchOffers());
+      }
+    } catch (err) {
+      setSellerError(err instanceof Error ? err.message : "Seller registration failed");
+    } finally {
+      setSellerLoading(false);
     }
   }
 
@@ -203,6 +246,171 @@ export default function App() {
               <Route size={16} />
               Batch settle
             </div>
+            <div className={hederaActions.actions.publishSellerOffer.ready ? "action-chip ready" : "action-chip blocked-chip"}>
+              <Store size={16} />
+              Seller registry
+            </div>
+          </section>
+        ) : null}
+
+        <section className="setup-strip">
+          <div>
+            <strong>Seller onboarding</strong>
+            <span>{sellerResult ? `${sellerResult.offer.displayName}: ${sellerResult.status}` : "Publish or save a seller offer with live pricing."}</span>
+          </div>
+          <button type="button" onClick={() => setSellerOpen((value) => !value)}>
+            <Store size={17} />
+            {sellerOpen ? "Hide" : "Become seller"}
+          </button>
+        </section>
+
+        {sellerOpen ? (
+          <section className="setup-panel seller-panel">
+            <div className="setup-fields seller-fields">
+              <label className="field">
+                <span>Seller ID</span>
+                <input
+                  value={sellerForm.sellerId}
+                  onChange={(event) => setSellerForm((value) => ({ ...value, sellerId: event.target.value }))}
+                />
+              </label>
+              <label className="field">
+                <span>Display name</span>
+                <input
+                  value={sellerForm.displayName}
+                  onChange={(event) => setSellerForm((value) => ({ ...value, displayName: event.target.value }))}
+                />
+              </label>
+              <label className="field">
+                <span>Model</span>
+                <input
+                  value={sellerForm.modelId}
+                  onChange={(event) => setSellerForm((value) => ({ ...value, modelId: event.target.value }))}
+                />
+              </label>
+              <label className="field">
+                <span>Endpoint</span>
+                <input
+                  value={sellerForm.x402Endpoint}
+                  onChange={(event) => setSellerForm((value) => ({ ...value, x402Endpoint: event.target.value }))}
+                />
+              </label>
+              <label className="field">
+                <span>Hedera account</span>
+                <input
+                  placeholder="0.0.x"
+                  value={sellerForm.hederaAccount}
+                  onChange={(event) => setSellerForm((value) => ({ ...value, hederaAccount: event.target.value }))}
+                />
+              </label>
+              <label className="field">
+                <span>Seller EVM address</span>
+                <input
+                  placeholder="0x..."
+                  value={sellerForm.sellerEvmAddress}
+                  onChange={(event) => setSellerForm((value) => ({ ...value, sellerEvmAddress: event.target.value }))}
+                />
+              </label>
+              <label className="field">
+                <span>Fixed fee</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.001"
+                  value={sellerForm.fixedFeeInf}
+                  onChange={(event) => setSellerForm((value) => ({ ...value, fixedFeeInf: Number(event.target.value) }))}
+                />
+              </label>
+              <label className="field">
+                <span>Max budget</span>
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={sellerForm.maxBudgetInf}
+                  onChange={(event) => setSellerForm((value) => ({ ...value, maxBudgetInf: Number(event.target.value) }))}
+                />
+              </label>
+              <label className="field">
+                <span>Input MTok</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.001"
+                  value={sellerForm.inputPricePerMTokInf}
+                  onChange={(event) => setSellerForm((value) => ({ ...value, inputPricePerMTokInf: Number(event.target.value) }))}
+                />
+              </label>
+              <label className="field">
+                <span>Output MTok</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.001"
+                  value={sellerForm.outputPricePerMTokInf}
+                  onChange={(event) => setSellerForm((value) => ({ ...value, outputPricePerMTokInf: Number(event.target.value) }))}
+                />
+              </label>
+              <label className="field">
+                <span>Max input tokens</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1000"
+                  value={sellerForm.maxInputTokens}
+                  onChange={(event) => setSellerForm((value) => ({ ...value, maxInputTokens: Number(event.target.value) }))}
+                />
+              </label>
+              <label className="field">
+                <span>Max output tokens</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1000"
+                  value={sellerForm.maxOutputTokens}
+                  onChange={(event) => setSellerForm((value) => ({ ...value, maxOutputTokens: Number(event.target.value) }))}
+                />
+              </label>
+            </div>
+            <label className="toggle-row">
+              <input
+                type="checkbox"
+                checked={sellerForm.publishOnChain}
+                onChange={(event) => setSellerForm((value) => ({ ...value, publishOnChain: event.target.checked }))}
+              />
+              <span>Publish to Hedera ProxyRegistry</span>
+            </label>
+            <label className="field">
+              <span>Summary</span>
+              <textarea
+                className="compact-textarea"
+                rows={3}
+                value={sellerForm.summary}
+                onChange={(event) => setSellerForm((value) => ({ ...value, summary: event.target.value }))}
+              />
+            </label>
+            <button
+              className="primary"
+              type="button"
+              disabled={sellerLoading || !sellerForm.sellerId.trim() || !sellerForm.hederaAccount.trim()}
+              onClick={() => void runSellerRegistration()}
+            >
+              {sellerLoading ? <LoaderCircle className="spin" size={18} /> : <Store size={18} />}
+              {sellerForm.publishOnChain ? "Publish seller" : "Save seller"}
+            </button>
+            {sellerError ? <p className="error">{sellerError}</p> : null}
+            {sellerResult ? (
+              <div className={sellerResult.status === "blocked" ? "seller-result blocked-result" : "seller-result"}>
+                <strong>{sellerResult.message}</strong>
+                {sellerResult.missing.length ? <span>Missing {sellerResult.missing.join(", ")}</span> : null}
+                {sellerResult.hashScanUrl ? (
+                  <a href={sellerResult.hashScanUrl} target="_blank" rel="noreferrer">
+                    <ExternalLink size={16} />
+                    Open seller registry transaction
+                  </a>
+                ) : null}
+              </div>
+            ) : null}
           </section>
         ) : null}
 
@@ -307,6 +515,7 @@ export default function App() {
                 <div>
                   <h3>{offer.displayName}</h3>
                   <p>{offer.summary}</p>
+                  <span className={`registry-badge ${offer.registryStatus}`}>{offer.registryStatus}</span>
                 </div>
                 <strong>{money(offer.fixedFeeInf)}</strong>
               </article>

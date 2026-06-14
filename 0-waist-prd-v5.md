@@ -11,7 +11,7 @@
 
 ---
 
-## Implementation status — 2026-06-13
+## Implementation status — 2026-06-14
 
 Current branch: `codex/full-p0-continuation`
 
@@ -23,6 +23,10 @@ Current branch: `codex/full-p0-continuation`
 - [x] ProofRouter service with one shared `executeInferenceOrder` workflow for Quick Buy and Router Agent.
 - [x] ProofRouter MCP stdio server using the official MCP TypeScript SDK, with real protocol smoke coverage.
 - [x] Seeded Alpha/Beta/Gamma seller offers.
+- [x] Dynamic registered-offer marketplace cache, shared by API, MCP, demo script, and frontend.
+- [x] Live seller offer publication through `ProxyRegistry.publishOffer`; registry offer `1`, transaction `0.0.9186037@1781396121.704889572`.
+- [x] Seller onboarding frontend panel for local-save or Hedera publish, with pricing, endpoint, account, and HashScan result state.
+- [x] Seller-node service exposing `/health`, `/x402`, and OpenAI-compatible `/v1/chat/completions` guarded by payment/escrow evidence.
 - [x] Quick Buy deterministic cheapest compatible seller selection.
 - [x] Router Agent selection through a real OpenAI LLM call when `mode=router-agent`.
 - [x] Real OpenAI Responses API answer generation from the server.
@@ -35,7 +39,7 @@ Current branch: `codex/full-p0-continuation`
 - [x] Live API order audit transaction visible on HashScan: `0.0.9186037@1781386460.953715803`.
 - [x] Live HFS manifest refresh transaction visible on HashScan: `0.0.9186037@1781389738.626703938`.
 - [x] Minimal Vite frontend showing prompt input, mode, budget, selected route, proof/payment status, answer, seller candidates, timeline, and HashScan action.
-- [x] Frontend/API Hedera action readiness for INF, contracts, x402 escrow, refund schedule, and batch settlement.
+- [x] Frontend/API Hedera action readiness for INF, contracts, x402 escrow, seller registry publication, refund schedule, and batch settlement.
 - [x] Hedera SDK helper to create a scheduled transaction targeting `ProofEscrow.refundExpired(orderId)`.
 - [x] Hedera SDK helper to build/submit a native batch containing `ProofEscrow.settle` and a hash-only HCS receipt message.
 - [x] Demo scripts: `pnpm demo:deploy`, `pnpm demo:verifier`, `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm test:e2e`, `pnpm mcp`.
@@ -48,6 +52,7 @@ Current branch: `codex/full-p0-continuation`
 - [x] `pnpm test:e2e` passes.
 - [x] Real OpenAI smoke ran through `pnpm demo:judge`.
 - [x] `pnpm demo:seed` creates visible Hedera Testnet HCS activity.
+- [x] `pnpm demo:seller` publishes a live seller offer to `ProxyRegistry` and stores the local marketplace cache.
 - [x] `pnpm demo:deploy` creates/loads HTS `INF` and deploys the three Hedera EVM contracts.
 - [x] Local API order endpoint submits hash-only HCS audit messages and returns HashScan links.
 - [x] `pnpm demo:health` reports `minimalDemo.ready=true` and fails full P0 for missing locked integrations.
@@ -56,13 +61,16 @@ Current branch: `codex/full-p0-continuation`
 
 - [x] Frontend running locally at `http://localhost:5173`.
 - [x] API running locally at `http://localhost:8787`.
+- [x] Seller node running locally at `http://localhost:8790`.
 - [x] Real OpenAI call path working.
 - [x] Real Hedera Testnet scanner activity working.
+- [x] Real seller registry activity working.
 
 ### Not yet complete for full P0
 
 - [x] HTS `INF` creation.
 - [x] Hedera EVM contract deployment.
+- [x] Seller offer publication into `ProxyRegistry`.
 - [ ] Buyer/seller INF association and funding through the real wallet path.
 - [ ] Real contract calls for order open, settlement, and refund.
 - [ ] Dynamic wallet login/delegated policy.
@@ -72,7 +80,7 @@ Current branch: `codex/full-p0-continuation`
 - [ ] Scheduled refund execution for a real funded order.
 - [ ] Native Hedera batch settlement execution plus HCS receipt for a real verified receipt.
 - [ ] Hedera Agent Kit action wiring.
-- [ ] Cloudflare Pages deployment; `CLOUDFLARE_ACCOUNT_ID` is still needed.
+- [ ] Cloudflare Pages deployment credentials and project publish.
 
 ---
 

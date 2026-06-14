@@ -148,7 +148,7 @@ h3 {
 
 .action-strip {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
   padding: 10px;
 }
@@ -197,6 +197,60 @@ h3 {
   color: #146c5f;
   font-weight: 800;
   text-decoration: none;
+}
+
+.seller-panel {
+  margin-top: -8px;
+}
+
+.seller-fields {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.compact-textarea {
+  min-height: 92px;
+}
+
+.toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  margin: 2px 0 14px;
+  color: #31434b;
+  font-weight: 800;
+}
+
+.toggle-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: #146c5f;
+}
+
+.seller-result {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid #b9d8cf;
+  border-radius: 6px;
+  background: #eef8f4;
+  color: #125442;
+}
+
+.seller-result a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #146c5f;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.blocked-result {
+  border-color: #edc297;
+  background: #fbf1e8;
+  color: #7a4215;
 }
 
 .order-grid,
@@ -407,6 +461,29 @@ input {
   line-height: 1.45;
 }
 
+.registry-badge {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 24px;
+  align-items: center;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: #eef3f2;
+  color: #43525a;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.registry-badge.submitted {
+  background: #eaf6f0;
+  color: #126349;
+}
+
+.registry-badge.blocked {
+  background: #f6ece2;
+  color: #7a4215;
+}
+
 .seller strong {
   align-self: end;
   color: #146c5f;
@@ -492,6 +569,10 @@ input {
   }
 
   .setup-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .seller-fields {
     grid-template-columns: 1fr;
   }
 

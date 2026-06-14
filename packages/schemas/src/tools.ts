@@ -13,7 +13,8 @@ export const ProofRouterToolNameSchema = z.enum([
   "proofrouter.call_seller_proxy",
   "proofrouter.wait_for_zktls_receipt",
   "proofrouter.batch_settle_and_log",
-  "proofrouter.get_dynamic_wallet_policy"
+  "proofrouter.get_dynamic_wallet_policy",
+  "proofrouter.publish_seller_offer"
 ]);
 export type ProofRouterToolName = z.infer<typeof ProofRouterToolNameSchema>;
 

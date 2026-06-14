@@ -7,6 +7,7 @@ import { OrderRequestSchema } from "@0waist/schemas";
 import { errorResponse } from "./errors.js";
 import { listProxyOffers } from "./offers.js";
 import { readPromptHistory } from "./promptHistory.js";
+import { registerSellerOffer } from "./sellerRegistration.js";
 import { saveAndSeedHedera } from "./setup.js";
 import { getHederaActionStatus, PROOFROUTER_TOOLS } from "./tools.js";
 import { executeInferenceOrder } from "./workflow.js";
@@ -41,6 +42,16 @@ export function createApp(): Express {
 
   app.get("/api/offers", (_request, response) => {
     response.json({ offers: listProxyOffers() });
+  });
+
+  app.post("/api/seller/register", async (request, response) => {
+    try {
+      const result = await registerSellerOffer(request.body);
+      response.status(result.status === "blocked" ? 409 : 200).json(result);
+    } catch (error) {
+      const { statusCode, body } = errorResponse(error);
+      response.status(statusCode).json(body);
+    }
   });
 
   app.get("/api/prompt-history", async (_request, response) => {

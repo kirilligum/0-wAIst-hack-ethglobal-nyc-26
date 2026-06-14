@@ -2,6 +2,7 @@ import { ProofRouterTool } from "@0waist/schemas";
 import {
   batchSettlementReadiness,
   dynamicReadiness,
+  proxyRegistryReadiness,
   scheduledRefundReadiness,
   x402Readiness
 } from "@0waist/hedera";
@@ -58,6 +59,10 @@ export const PROOFROUTER_TOOLS: ProofRouterTool[] = [
   {
     name: "proofrouter.get_dynamic_wallet_policy",
     description: "Read the current bounded Dynamic wallet policy."
+  },
+  {
+    name: "proofrouter.publish_seller_offer",
+    description: "Publish a seller offer into ProxyRegistry."
   }
 ];
 
@@ -76,6 +81,7 @@ export function getHederaActionStatus(env: NodeJS.ProcessEnv = process.env) {
   const x402 = x402Readiness(env);
   const scheduledRefund = scheduledRefundReadiness(env);
   const batchSettlement = batchSettlementReadiness(env);
+  const sellerRegistry = proxyRegistryReadiness(env);
 
   return {
     tools: PROOFROUTER_TOOLS,
@@ -89,7 +95,8 @@ export function getHederaActionStatus(env: NodeJS.ProcessEnv = process.env) {
         missing: infMissing
       },
       dynamic,
-      x402
+      x402,
+      sellerRegistry
     },
     actions: {
       openOrderViaX402: {
@@ -104,6 +111,10 @@ export function getHederaActionStatus(env: NodeJS.ProcessEnv = process.env) {
       batchSettleAndLog: {
         ...batchSettlement,
         tool: "proofrouter.batch_settle_and_log"
+      },
+      publishSellerOffer: {
+        ...sellerRegistry,
+        tool: "proofrouter.publish_seller_offer"
       }
     }
   };
