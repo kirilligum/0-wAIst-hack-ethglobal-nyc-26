@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import cors from "cors";
 import dotenv from "dotenv";
 import express, { type Express } from "express";
+import { getInfWalletDiagnostics } from "@0waist/hedera";
 import { OrderRequestSchema } from "@0waist/schemas";
 import { errorResponse } from "./errors.js";
 import { createLocalVerifierReceipt } from "./localVerifier.js";
@@ -40,6 +41,15 @@ export function createApp(): Express {
 
   app.get("/api/hedera-actions", (_request, response) => {
     response.json(getHederaActionStatus());
+  });
+
+  app.get("/api/inf-wallets", async (_request, response) => {
+    try {
+      response.json(await getInfWalletDiagnostics());
+    } catch (error) {
+      const { statusCode, body } = errorResponse(error);
+      response.status(statusCode).json(body);
+    }
   });
 
   app.post("/api/verifier/local-receipt", async (request, response) => {

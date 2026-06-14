@@ -15,9 +15,11 @@ import { Offer, OrderMode, OrderResult, SellerRegistrationResult } from "@0waist
 import {
   createOrder,
   fetchHederaActionStatus,
+  fetchInfWalletDiagnostics,
   fetchOffers,
   HederaActionStatus,
   HederaSetupResult,
+  InfWalletDiagnostics,
   OpenEscrowOrderResult,
   registerSeller,
   openEscrowOrder,
@@ -49,6 +51,7 @@ export default function App() {
   const [setupResult, setSetupResult] = useState<HederaSetupResult | null>(null);
   const [setupError, setSetupError] = useState<string | null>(null);
   const [hederaActions, setHederaActions] = useState<HederaActionStatus | null>(null);
+  const [infWallets, setInfWallets] = useState<InfWalletDiagnostics | null>(null);
   const [sellerOpen, setSellerOpen] = useState(false);
   const [sellerLoading, setSellerLoading] = useState(false);
   const [sellerResult, setSellerResult] = useState<SellerRegistrationResult | null>(null);
@@ -81,6 +84,9 @@ export default function App() {
     fetchHederaActionStatus()
       .then(setHederaActions)
       .catch(() => setHederaActions(null));
+    fetchInfWalletDiagnostics()
+      .then(setInfWallets)
+      .catch(() => setInfWallets(null));
   }, []);
 
   const selectedSeller = useMemo(() => {
@@ -297,6 +303,26 @@ export default function App() {
               <Store size={16} />
               Seller registry
             </div>
+          </section>
+        ) : null}
+
+        {infWallets ? (
+          <section className="wallet-strip">
+            <div className={infWallets.buyer?.associated ? "wallet-metric ready" : "wallet-metric blocked-metric"}>
+              <span>Buyer INF</span>
+              <strong>{infWallets.buyer ? `${infWallets.buyer.balanceInf.toFixed(3)} INF` : "Missing"}</strong>
+            </div>
+            <div className={infWallets.seller?.associated ? "wallet-metric ready" : "wallet-metric blocked-metric"}>
+              <span>Seller INF</span>
+              <strong>{infWallets.seller ? (infWallets.seller.associated ? "Associated" : "Not associated") : "Missing"}</strong>
+            </div>
+            <div className={infWallets.proofEscrowAllowance?.amountInf ? "wallet-metric ready" : "wallet-metric blocked-metric"}>
+              <span>Escrow allowance</span>
+              <strong>{infWallets.proofEscrowAllowance ? `${infWallets.proofEscrowAllowance.amountInf.toFixed(3)} INF` : "Missing"}</strong>
+            </div>
+            {infWallets.missing.length ? (
+              <div className="wallet-missing">Missing {infWallets.missing.join(", ")}</div>
+            ) : null}
           </section>
         ) : null}
 

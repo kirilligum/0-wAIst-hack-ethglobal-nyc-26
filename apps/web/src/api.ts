@@ -83,6 +83,38 @@ export async function fetchHederaActionStatus(): Promise<HederaActionStatus> {
   return await response.json() as HederaActionStatus;
 }
 
+export interface InfWalletDiagnostics {
+  status: "ready" | "blocked";
+  tokenId?: string;
+  buyer?: {
+    accountId: string;
+    associated: boolean;
+    balanceInf: number;
+    missing: string[];
+  };
+  seller?: {
+    accountId: string;
+    associated: boolean;
+    balanceInf: number;
+    missing: string[];
+  };
+  proofEscrowAllowance?: {
+    ownerAccountId: string;
+    spenderAccountId: string;
+    amountInf: number;
+    missing: string[];
+  };
+  missing: string[];
+}
+
+export async function fetchInfWalletDiagnostics(): Promise<InfWalletDiagnostics> {
+  const response = await fetch(`${API_BASE_URL}/api/inf-wallets`);
+  if (!response.ok) {
+    throw new Error(`INF wallet diagnostics failed with HTTP ${response.status}`);
+  }
+  return await response.json() as InfWalletDiagnostics;
+}
+
 export interface HederaSetupResult {
   status: "seeded";
   topic: {

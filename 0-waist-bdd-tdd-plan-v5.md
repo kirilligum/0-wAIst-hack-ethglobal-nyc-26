@@ -306,12 +306,12 @@ M9: UI, dashboard, README, demo readiness
 | M1 | Partial complete | Contract source now compiles and implements INF locking, approved-verifier settlement, unused-INF refund, and the single `refundExpired` timeout entrypoint. Live deployments exist: `ProxyRegistry` `0.0.9226646`, `ProofEscrow` `0.0.9226648`, `VerifierRegistry` `0.0.9226643`. The approved-verifier contract path is now marked as legacy demo scaffolding to be replaced by CRE report receiver/registry semantics. Runtime contract call tests remain open. |
 | M2 | Partial complete | Hedera SDK HCS/HFS/HTS helpers exist. Live HCS topic `0.0.9226268`, HFS manifest `0.0.9226269`, HTS `INF` token `0.0.9226625`, and refreshed manifest transaction `0.0.9186037@1781389738.626703938` are visible on Hedera Testnet. Buyer/seller wallet association and funding remain blocked by wallet credentials. |
 | M3 | Partial complete | ProofRouter HTTP service, tool registry, and official MCP stdio server exist. MCP client smoke coverage lists and calls tools over the protocol. `proofrouter.publish_seller_offer` uses the shared seller registration handler. `proofrouter.submit_proof_to_cre` now signs a local verifier placeholder receipt when CRE is unavailable, and remains labeled as placeholder evidence. |
-| M4 | Partial complete | Dynamic/x402 credentials are present and readiness passes. Hedera SDK helper now ABI-encodes/builds/submits `ProofEscrow.openOrder`, and ProofRouter HTTP/MCP can prepare the exact x402 escrow transaction. Actual buyer wallet execution and INF allowance/funding remain open. |
+| M4 | Partial complete | Dynamic/x402 credentials are present and readiness passes. Hedera SDK helper now ABI-encodes/builds/submits `ProofEscrow.openOrder`, and ProofRouter HTTP/MCP can prepare the exact x402 escrow transaction. Read-only Mirror Node diagnostics report buyer/seller INF association, buyer INF balance, and ProofEscrow INF allowance. Actual buyer wallet execution and INF allowance/funding remain open. |
 | M5 | Partial complete | Seller-node service exists and gates `/v1/chat/completions` behind structured escrow evidence headers that include order id, request hash, ProofEscrow target, network, and INF asset. Local verifier EVM signer is generated in ignored `.env` and approved in the live `VerifierRegistry`. Chainlink CRE deploy access is requested but not enabled, no workflow exists, Reclaim has no provider, and trusted CRE/real zkTLS remains blocked. |
 | M6 | Partial complete | SDK helper builds and can submit a Hedera Scheduled Transaction targeting `ProofEscrow.refundExpired(orderId)`. Live execution remains blocked until a real funded order exists. |
 | M7 | Partial complete | SDK helper ABI-encodes `ProofEscrow.settle`, builds a native Hedera `BatchTransaction` with an HCS receipt message, and exposes readiness in the API/UI for the placeholder demo path. Current CRE discovery says Hedera direct workflow support is false, so trusted live settlement is deferred to the Sepolia CRE settlement plus Hedera audit plan. |
 | M8 | Partial complete | Encrypted prompt-history summaries and Router Agent LLM decision path exist. |
-| M9 | Partial complete | Frontend, README, and demo scripts exist; dashboard is folded into the first UI for the minimal demo. UI now exposes seller onboarding and `ProofEscrow.openOrder` escrow preparation for registry-backed offers. Hedera Agent Kit package/core plugin readiness is wired through `@hashgraph/hedera-agent-kit`. |
+| M9 | Partial complete | Frontend, README, and demo scripts exist; dashboard is folded into the first UI for the minimal demo. UI now exposes seller onboarding, `ProofEscrow.openOrder` escrow preparation for registry-backed offers, and INF wallet diagnostics. Hedera Agent Kit package/core plugin readiness is wired through `@hashgraph/hedera-agent-kit`. |
 
 Current verification:
 
@@ -328,6 +328,7 @@ pnpm demo:health PASS for placeholder demo path, with trustedCreReady=false and 
 curl /api/hedera-actions PASS locally; seller registry publication ready; x402 order readiness true; proof/settlement readiness uses local verifier placeholder while CRE is blocked
 MCP stdio smoke PASS; client lists and calls `proofrouter.list_proxy_offers`
 targeted M4/M5 tests PASS for `ProofEscrow.openOrder` encoding, ProofRouter x402 preparation, and seller escrow-evidence enforcement
+targeted INF wallet diagnostics tests PASS with mocked Mirror Node token relationship and allowance responses
 ```
 
 Temporary exception: Chainlink CRE deploy access is requested but not enabled. No CRE workflow exists, no Sepolia receiver/target exists, Reclaim has no provider, and Hedera is not directly listed as a CRE-supported workflow chain. The current executable proof path uses a real approved local verifier signer and `ProofEscrow`-compatible receipt signatures. This is acceptable for continued demo implementation, but it is not trusted CRE completion evidence. Later trusted CRE work should follow `plans/sepolia-cre-settlement-hedera-audit-plan.md`.
@@ -738,6 +739,8 @@ Status:
 
 - [x] `packages/hedera` has typed `ProofEscrow.openOrder` calldata, transaction builder, readiness check, and submit helper.
 - [x] `proofrouter.open_order_via_x402` and `POST /api/orders/open-via-x402` prepare the exact `openOrder` call for a numeric on-chain `offerId`.
+- [x] `GET /api/inf-wallets` reports buyer/seller INF token relationship, buyer INF balance, and ProofEscrow allowance from Mirror Node.
+- [x] Frontend shows the INF wallet diagnostics strip next to the Hedera action checklist.
 - [x] Live submission path blocks unless the configured Hedera signer is explicitly confirmed as the buyer wallet.
 - [ ] Dynamic delegated buyer execution, INF allowance, and x402-funded `ProofEscrow.openOrder` remain open.
 - [ ] Full funded-order lookup before seller serve remains open.

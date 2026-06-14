@@ -42,6 +42,7 @@ Current branch: `codex/full-p0-continuation`
 - [x] Minimal Vite frontend showing prompt input, mode, budget, selected route, proof/payment status, answer, seller candidates, timeline, and HashScan action.
 - [x] Frontend can prepare a `ProofEscrow.openOrder` x402 escrow transaction for sellers with numeric `registryOfferId`.
 - [x] Frontend/API Hedera action readiness for INF, contracts, x402 escrow, seller registry publication, refund schedule, and batch settlement.
+- [x] Frontend/API read-only Mirror Node diagnostics for buyer/seller INF association, buyer INF balance, and ProofEscrow INF allowance.
 - [x] Hedera SDK helper to ABI-encode, build, and submit `ProofEscrow.openOrder(offerId, promptHash, requestHash, deadline)`.
 - [x] ProofRouter HTTP/MCP path prepares `ProofEscrow.openOrder` calldata and blocks live submission until the configured signer is confirmed as the buyer wallet.
 - [x] Hedera SDK helper to create a scheduled transaction targeting `ProofEscrow.refundExpired(orderId)`.
@@ -77,7 +78,8 @@ Current branch: `codex/full-p0-continuation`
 - [x] Hedera EVM contract deployment.
 - [x] Seller offer publication into `ProxyRegistry`.
 - [x] `ProofEscrow.openOrder` transaction builder and ProofRouter preparation path.
-- [ ] Buyer/seller INF association and funding through the real wallet path.
+- [x] Read-only Mirror Node validation for buyer/seller INF association and buyer ProofEscrow allowance.
+- [ ] Buyer/seller INF association, funding, and allowance execution through the real wallet path.
 - [ ] Live buyer-wallet contract call for order open, plus live settlement and refund execution.
 - [ ] Dynamic wallet login/delegated policy.
 - [ ] Hedera x402 INF escrow funding.

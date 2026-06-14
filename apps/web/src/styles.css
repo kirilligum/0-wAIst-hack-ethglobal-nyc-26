@@ -153,6 +153,52 @@ h3 {
   padding: 10px;
 }
 
+.wallet-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 10px;
+  border: 1px solid #d9e0de;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.wallet-metric {
+  display: grid;
+  gap: 4px;
+  min-height: 56px;
+  padding: 9px 10px;
+  border-radius: 6px;
+  background: #eef3f2;
+}
+
+.wallet-metric span {
+  color: #5b6972;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.wallet-metric strong {
+  color: #172026;
+  font-size: 0.92rem;
+}
+
+.wallet-metric.ready {
+  background: #eaf6f0;
+}
+
+.wallet-metric.blocked-metric {
+  background: #f6ece2;
+}
+
+.wallet-missing {
+  grid-column: 1 / -1;
+  color: #7a4215;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
 .action-chip {
   display: inline-flex;
   align-items: center;
@@ -626,5 +672,9 @@ input {
 
   .action-strip {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .wallet-strip {
+    grid-template-columns: 1fr;
   }
 }
