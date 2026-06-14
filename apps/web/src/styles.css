@@ -98,14 +98,16 @@ h3 {
 
 .setup-strip,
 .setup-panel,
-.action-strip {
+.action-strip,
+.dynamic-strip {
   margin-bottom: 16px;
   border: 1px solid #d9e0de;
   border-radius: 8px;
   background: #ffffff;
 }
 
-.setup-strip {
+.setup-strip,
+.dynamic-strip {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -113,16 +115,19 @@ h3 {
   padding: 12px 14px;
 }
 
-.setup-strip div {
+.setup-strip div,
+.dynamic-copy {
   display: grid;
   gap: 3px;
 }
 
-.setup-strip strong {
+.setup-strip strong,
+.dynamic-copy strong {
   color: #172026;
 }
 
-.setup-strip span {
+.setup-strip span,
+.dynamic-copy span {
   color: #66757d;
   font-size: 0.9rem;
 }
@@ -140,6 +145,34 @@ h3 {
   color: #1d4b61;
   cursor: pointer;
   font-weight: 800;
+}
+
+.dynamic-widget {
+  flex: 0 0 auto;
+}
+
+.dynamic-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #315260;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.dynamic-details span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #eef6f4;
+}
+
+.blocked-dynamic {
+  border-color: #edc297;
+  background: #fbf1e8;
 }
 
 .setup-panel {
@@ -692,6 +725,11 @@ input {
   }
 
   .setup-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dynamic-strip {
     align-items: stretch;
     flex-direction: column;
   }

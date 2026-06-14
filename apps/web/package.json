@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@0waist/schemas": "workspace:*",
+    "@dynamic-labs/ethereum": "^4.88.6",
+    "@dynamic-labs/sdk-react-core": "^4.88.6",
     "@vitejs/plugin-react": "^5.0.2",
     "lucide-react": "^0.542.0",
     "react": "^19.1.1",

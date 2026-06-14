@@ -29,6 +29,11 @@ import {
   openEscrowOrder,
   setupHedera
 } from "./api.js";
+import { DynamicWalletPanel } from "./DynamicWalletPanel.js";
+
+interface AppProps {
+  dynamicConfigured: boolean;
+}
 
 function money(value: number): string {
   return `${value.toFixed(3)} INF`;
@@ -38,7 +43,7 @@ function modeLabel(mode: OrderMode): string {
   return mode === "quick-buy" ? "Quick Buy" : "Router Agent";
 }
 
-export default function App() {
+export default function App({ dynamicConfigured }: AppProps) {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [prompt, setPrompt] = useState("Give me a concise launch checklist for a Hedera AI payments demo.");
   const [budgetInf, setBudgetInf] = useState(0.5);
@@ -247,6 +252,8 @@ export default function App() {
             Hedera Testnet
           </div>
         </header>
+
+        <DynamicWalletPanel configured={dynamicConfigured} />
 
         <section className="setup-strip">
           <div>
