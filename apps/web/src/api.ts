@@ -21,15 +21,16 @@ export async function fetchOffers(): Promise<Offer[]> {
 }
 
 export interface EnsResolution {
-  status: "resolved" | "unresolved" | "blocked";
+  status: "resolved" | "registered" | "unresolved" | "blocked";
   name: string;
   network: "sepolia";
   chainId: 11155111;
   displayName?: string;
   address?: string;
   avatarUrl?: string;
+  profileUrl: string;
   resolverAddress?: string;
-  source: "ethereum-sepolia";
+  source: "ethereum-sepolia" | "ens-dev";
   message: string;
 }
 

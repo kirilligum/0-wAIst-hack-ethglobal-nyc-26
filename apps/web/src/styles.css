@@ -256,7 +256,7 @@ h3 {
 
 .seller-identity-strip {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr;
   gap: 8px;
   margin-bottom: 16px;
   padding: 10px;
@@ -284,6 +284,15 @@ h3 {
   color: #0f4c3d;
   font-size: 0.94rem;
   overflow-wrap: anywhere;
+}
+
+.ens-profile-link {
+  color: #0f4c3d;
+  text-decoration: none;
+}
+
+.ens-profile-link:hover {
+  text-decoration: underline;
 }
 
 .action-chip {

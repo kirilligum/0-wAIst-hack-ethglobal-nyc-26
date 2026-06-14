@@ -49,7 +49,17 @@ function shortAddress(address?: string): string {
   return address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "";
 }
 
-const demoSellerEnsName = import.meta.env.VITE_DEMO_SELLER_ENS_NAME ?? "ethglobal.eth";
+function ensStatusText(resolution?: EnsResolution): string {
+  if (!resolution) {
+    return "resolving";
+  }
+  if (resolution.address) {
+    return shortAddress(resolution.address);
+  }
+  return resolution.status === "unresolved" ? "registered" : resolution.status;
+}
+
+const demoSellerEnsName = import.meta.env.VITE_DEMO_SELLER_ENS_NAME ?? "0waist.eth";
 
 export default function App({ dynamicConfigured }: AppProps) {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -130,6 +140,7 @@ export default function App({ dynamicConfigured }: AppProps) {
           name,
           network: "sepolia",
           chainId: 11155111,
+          profileUrl: `https://app.ens.dev/p/${name}`,
           source: "ethereum-sepolia",
           message: error instanceof Error ? error.message : "ENS lookup failed"
         } satisfies EnsResolution] as const;
@@ -471,10 +482,16 @@ export default function App({ dynamicConfigured }: AppProps) {
               <strong>{featuredSeller.displayName}</strong>
             </div>
             <div>
-              <span>Live resolver</span>
+              <span>Live profile</span>
               <strong>
-                {featuredEns?.address ? shortAddress(featuredEns.address) : (featuredEns?.status ?? "resolving")}
+                <a className="ens-profile-link" href={featuredEns?.profileUrl ?? `https://app.ens.dev/p/${featuredSeller.sellerEnsName}`} target="_blank" rel="noreferrer">
+                  app.ens.dev
+                </a>
               </strong>
+            </div>
+            <div>
+              <span>Resolver record</span>
+              <strong>{ensStatusText(featuredEns)}</strong>
             </div>
             <div>
               <span>Network</span>
@@ -845,7 +862,7 @@ export default function App({ dynamicConfigured }: AppProps) {
                         {ens?.address ? (
                           <span className="ens-live">Sepolia live {shortAddress(ens.address)}</span>
                         ) : (
-                          <span className="ens-live pending">{ens?.status ?? "resolving"}</span>
+                          <span className="ens-live pending">{ensStatusText(ens)}</span>
                         )}
                       </div>
                     ) : null}

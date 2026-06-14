@@ -795,7 +795,7 @@ Status:
 - [x] Seller proxy now rejects a bare order id and requires structured escrow evidence headers for order id, request hash, ProofEscrow target, network, and `INF`.
 - [x] LiteLLM-compatible upstream path uses `LITELLM_BASE_URL`/`LITELLM_API_KEY`; OpenAI direct path is available when seller uses `OPENAI_API_KEY`.
 - [x] Seller publication path added to API, MCP, frontend, and `pnpm demo:seller`.
-- [x] Seller Sepolia ENS alias metadata and live Sepolia resolver status added to shared offers, seller onboarding, MCP publication, demo env, UI, and HFS market manifest payloads; buyer ENS is intentionally out of scope.
+- [x] Seller Sepolia ENS alias metadata and live ENS app profile link added to shared offers, seller onboarding, MCP publication, demo env, UI, and HFS market manifest payloads; demo seller is `0waist.eth` at `https://app.ens.dev/p/0waist.eth`; buyer ENS is intentionally out of scope.
 - [x] Live `ProxyRegistry.publishOffer` transaction succeeded for `registryOfferId=1`.
 - [ ] Seller-node escrow confirmation still needs real funded `ProofEscrow` order lookup before serving in full P0 mode.
 - [ ] `runVerifiedInference`, compact zkTLS proof generation, and CRE submission remain blocked until zkTLS provider policy/credentials and CRE workflow configuration are ready.

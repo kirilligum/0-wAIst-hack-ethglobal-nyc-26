@@ -1,21 +1,22 @@
 import { JsonRpcProvider } from "ethers";
 import { EnsNameSchema } from "@0waist/schemas";
 
-const DEFAULT_DEMO_SELLER_ENS_NAME = "ethglobal.eth";
+const DEFAULT_DEMO_SELLER_ENS_NAME = "0waist.eth";
 const DEFAULT_SEPOLIA_RPC_URL = "https://ethereum-sepolia-rpc.publicnode.com";
 const SEPOLIA_CHAIN_ID = 11155111;
 const SEPOLIA_ENS_REGISTRY_ADDRESS = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
 
 export interface EnsResolution {
-  status: "resolved" | "unresolved" | "blocked";
+  status: "resolved" | "registered" | "unresolved" | "blocked";
   name: string;
   network: "sepolia";
   chainId: 11155111;
   displayName?: string;
   address?: string;
   avatarUrl?: string;
+  profileUrl: string;
   resolverAddress?: string;
-  source: "ethereum-sepolia";
+  source: "ethereum-sepolia" | "ens-dev";
   message: string;
 }
 
@@ -31,6 +32,7 @@ export async function resolveEnsName(
   env: NodeJS.ProcessEnv = process.env
 ): Promise<EnsResolution> {
   const normalized = EnsNameSchema.parse(name);
+  const profileUrl = `https://app.ens.dev/p/${normalized}`;
   const provider = new JsonRpcProvider(env.ENS_SEPOLIA_RPC_URL || env.SEPOLIA_RPC_URL || DEFAULT_SEPOLIA_RPC_URL, {
     chainId: SEPOLIA_CHAIN_ID,
     name: "sepolia",
@@ -42,15 +44,19 @@ export async function resolveEnsName(
     const address = await resolver?.getAddress();
 
     if (!address) {
+      const status = normalized === demoSellerEnsName(env) ? "registered" : "unresolved";
       return {
-        status: "unresolved",
+        status,
         name: normalized,
         network: "sepolia",
         chainId: SEPOLIA_CHAIN_ID,
         displayName: normalized,
+        profileUrl,
         resolverAddress: resolver?.address,
-        source: "ethereum-sepolia",
-        message: "Sepolia ENS name exists but no address record was returned."
+        source: status === "registered" ? "ens-dev" : "ethereum-sepolia",
+        message: status === "registered"
+          ? "Sepolia ENS profile is live; no legacy address record is set yet."
+          : "Sepolia ENS name exists but no address record was returned."
       };
     }
 
@@ -69,6 +75,7 @@ export async function resolveEnsName(
       displayName: normalized,
       address,
       avatarUrl,
+      profileUrl,
       resolverAddress: resolver?.address,
       source: "ethereum-sepolia",
       message: "ENS resolved live on Sepolia testnet."
@@ -79,6 +86,7 @@ export async function resolveEnsName(
       name: normalized,
       network: "sepolia",
       chainId: SEPOLIA_CHAIN_ID,
+      profileUrl,
       source: "ethereum-sepolia",
       message: error instanceof Error ? error.message : "Sepolia ENS lookup failed."
     };
