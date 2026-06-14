@@ -307,9 +307,9 @@ M9: UI, dashboard, README, demo readiness
 | M2 | Partial complete | Hedera SDK HCS/HFS/HTS helpers exist. Live HCS topic `0.0.9226268`, HFS manifest `0.0.9226269`, HTS `INF` token `0.0.9226625`, and refreshed manifest transaction `0.0.9186037@1781389738.626703938` are visible on Hedera Testnet. Buyer/seller wallet association and funding remain blocked by wallet credentials. |
 | M3 | Partial complete | ProofRouter HTTP service, tool registry, and official MCP stdio server exist. MCP client smoke coverage lists and calls tools over the protocol. `proofrouter.publish_seller_offer` uses the shared seller registration handler. `proofrouter.submit_proof_to_cre` now signs a local verifier placeholder receipt when CRE is unavailable, and remains labeled as placeholder evidence. |
 | M4 | Partial complete | Dynamic/x402 credentials are present and readiness passes. Hedera SDK helper now ABI-encodes/builds/submits `ProofEscrow.openOrder`, and ProofRouter HTTP/MCP can prepare the exact x402 escrow transaction. Actual buyer wallet execution and INF allowance/funding remain open. |
-| M5 | Partial complete | Seller-node service exists and gates `/v1/chat/completions` behind structured escrow evidence headers that include order id, request hash, ProofEscrow target, network, and INF asset. Local verifier EVM signer is generated in ignored `.env` and approved in the live `VerifierRegistry`. Because Chainlink CRE login is blocked, a local verifier placeholder now signs `ProofEscrow`-compatible receipts. Trusted CRE/real zkTLS remains blocked and must not be claimed complete. |
+| M5 | Partial complete | Seller-node service exists and gates `/v1/chat/completions` behind structured escrow evidence headers that include order id, request hash, ProofEscrow target, network, and INF asset. Local verifier EVM signer is generated in ignored `.env` and approved in the live `VerifierRegistry`. Chainlink CRE deploy access is requested but not enabled, no workflow exists, Reclaim has no provider, and trusted CRE/real zkTLS remains blocked. |
 | M6 | Partial complete | SDK helper builds and can submit a Hedera Scheduled Transaction targeting `ProofEscrow.refundExpired(orderId)`. Live execution remains blocked until a real funded order exists. |
-| M7 | Partial complete | SDK helper ABI-encodes `ProofEscrow.settle`, builds a native Hedera `BatchTransaction` with an HCS receipt message, and exposes readiness in the API/UI. While CRE is blocked, health selects `local-verifier-batch-placeholder`; trusted CRE settlement remains open. |
+| M7 | Partial complete | SDK helper ABI-encodes `ProofEscrow.settle`, builds a native Hedera `BatchTransaction` with an HCS receipt message, and exposes readiness in the API/UI for the placeholder demo path. Current CRE discovery says Hedera direct workflow support is false, so trusted live settlement is deferred to the Sepolia CRE settlement plus Hedera audit plan. |
 | M8 | Partial complete | Encrypted prompt-history summaries and Router Agent LLM decision path exist. |
 | M9 | Partial complete | Frontend, README, and demo scripts exist; dashboard is folded into the first UI for the minimal demo. UI now exposes seller onboarding and `ProofEscrow.openOrder` escrow preparation for registry-backed offers. Hedera Agent Kit package/core plugin readiness is wired through `@hashgraph/hedera-agent-kit`. |
 
@@ -330,7 +330,7 @@ MCP stdio smoke PASS; client lists and calls `proofrouter.list_proxy_offers`
 targeted M4/M5 tests PASS for `ProofEscrow.openOrder` encoding, ProofRouter x402 preparation, and seller escrow-evidence enforcement
 ```
 
-Temporary exception: Chainlink CRE login is blocked. The current executable proof path uses a real approved local verifier signer and `ProofEscrow`-compatible receipt signatures. This is acceptable for continued demo implementation, but it is not trusted CRE completion evidence.
+Temporary exception: Chainlink CRE deploy access is requested but not enabled. No CRE workflow exists, no Sepolia receiver/target exists, Reclaim has no provider, and Hedera is not directly listed as a CRE-supported workflow chain. The current executable proof path uses a real approved local verifier signer and `ProofEscrow`-compatible receipt signatures. This is acceptable for continued demo implementation, but it is not trusted CRE completion evidence. Later trusted CRE work should follow `plans/sepolia-cre-settlement-hedera-audit-plan.md`.
 
 ---
 
@@ -469,6 +469,18 @@ Direct CRE settlement: accepted only after `CRE_CHAIN_SUPPORT_GATE` proves the t
 Hedera Batch settlement: retained only as the selected fallback shell if CRE direct writes to Hedera are unsupported and a CRE-authenticated registry/receiver can cryptographically authorize the batch.
 CRE simulation: allowed for development tests, never as trusted demo or completion evidence.
 Proof packaging: use compact proof presentations or hashes where needed to stay within CRE HTTP input, observation, response, and report payload quotas.
+```
+
+Credential update, 2026-06-14:
+
+```text
+CRE deploy access status is requested, not enabled.
+No CRE workflow exists yet.
+Hedera direct CRE workflow support is recorded as false for the current dashboard/CLI state.
+Sepolia is the selected supported test chain for the later trusted CRE settlement path.
+Captured non-secret CRE values include CRE_DON_ID=zone-a, CRE_GATEWAY_URL=https://01.gateway.zone-a.cre.chain.link, CRE_SUPPORTED_TEST_CHAIN=ethereum-testnet-sepolia, and CRE_SUPPORTED_TEST_CHAIN_SELECTOR=16015286601757825753.
+Do not claim direct CRE-to-Hedera settlement. Keep Hedera as HCS audit and HFS market manifest until CRE support changes.
+Implementation details for the later path live in plans/sepolia-cre-settlement-hedera-audit-plan.md.
 ```
 
 ### Useful deltas not adopted verbatim

@@ -82,7 +82,7 @@ Current branch: `codex/full-p0-continuation`
 - [ ] Dynamic wallet login/delegated policy.
 - [ ] Hedera x402 INF escrow funding.
 - [x] Local verifier placeholder signing path.
-- [ ] Trusted Chainlink CRE / real zkTLS verifier integration.
+- [ ] Trusted Chainlink CRE / real zkTLS verifier integration, deferred until CRE deploy access, workflow, Reclaim provider, and Sepolia receiver/target exist.
 - [ ] Real zkTLS provider proof policy wired to the trusted verifier path.
 - [ ] Scheduled refund execution for a real funded order.
 - [ ] Native Hedera batch settlement execution plus HCS receipt for a real verified receipt.
@@ -118,7 +118,7 @@ Codex must optimize for a small, maintainable, robust codebase.
 | Decision | Locked choice | Consequence |
 |---|---|---|
 | 1A | Live scheduled refund execution in P0 | Use one timeout function: `ProofEscrow.refundExpired(orderId)`. Create and demonstrate a Hedera Scheduled Transaction targeting it. No `expireOrder`; no manual-refund demo path. |
-| 2A | Native Hedera batch settlement in P0 | `ProofEscrow.settle(...)` and HCS receipt log must be submitted as one Hedera Batch Transaction. No sequential product path. |
+| 2A | One CRE-selected settlement shell in P0 | The current Hedera Batch helper supports the placeholder demo path while CRE is unavailable. Current CRE discovery says Hedera is not directly listed as a supported workflow chain, so the later trusted path is Sepolia CRE settlement plus Hedera HCS/HFS audit unless CRE Hedera support changes. Do not keep duplicate settlement shells live. |
 | 3A | HTS `INF` token for P0 escrow and Quick Buy | `INF` is the only product settlement asset. HBAR is only for fees/gas. |
 | 4A | Real zkTLS mandatory in P0 | End-to-end settlement requires real zkTLS proof verification. No demo verifier/stub path. |
 | 5A | Full Hedera x402 Quick Buy in P0 | Quick Buy uses real `402 Payment Required` and Hedera x402 with `INF`; the x402 payment funds `ProofEscrow`, not final seller payment. |
@@ -126,7 +126,9 @@ Codex must optimize for a small, maintainable, robust codebase.
 | 7A | Real MCP server in P0 | Product actions go through a real `proofrouter-mcp` server. No HTTP-only tool substitute. |
 | 8A | Local encrypted prompt-history viewer in P0 | Dashboard shows local encrypted prompt history with summaries and redaction controls. |
 
-Temporary execution note, 2026-06-14: Chainlink CRE login is blocked. Until that is unblocked, the executable demo path may use the approved local verifier placeholder to sign `ProofEscrow`-compatible receipts. `pnpm demo:health` must label this as `local-verifier-placeholder` with `trustedCreReady=false`; it must not claim trusted CRE / real zkTLS completion.
+Temporary execution note, 2026-06-14: Chainlink CRE deploy access is requested but not enabled, no CRE workflow exists, Reclaim has no provider configured, and Hedera is not directly listed as a CRE-supported workflow chain. Until the Sepolia CRE settlement path in `plans/sepolia-cre-settlement-hedera-audit-plan.md` is implemented, the executable demo path may use the approved local verifier placeholder to sign `ProofEscrow`-compatible receipts. `pnpm demo:health` must label this as `local-verifier-placeholder` with `trustedCreReady=false`; it must not claim trusted CRE / real zkTLS completion or direct CRE-to-Hedera settlement.
+
+This note supersedes older native-Hedera-batch settlement wording for trusted CRE completion. Hedera remains the audit and manifest layer; Sepolia is the planned CRE-supported settlement chain unless Chainlink CRE later exposes direct Hedera workflow support.
 
 Allowed test doubles:
 
