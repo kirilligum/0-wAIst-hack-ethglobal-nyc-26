@@ -255,6 +255,7 @@ export interface RefundScheduleResult {
     hashScanUrl: string;
     scheduledFunction: "refundExpired";
     orderId: number;
+    expirationEpochSeconds: number;
   };
 }
 
@@ -283,6 +284,7 @@ export async function openEscrowOrder(input: {
 export async function createRefundSchedule(input: {
   orderId: number;
   confirmedFundedOrder: boolean;
+  expirationEpochSeconds?: number;
 }): Promise<RefundScheduleResult> {
   const response = await fetch(`${API_BASE_URL}/api/orders/refund-schedule`, {
     method: "POST",

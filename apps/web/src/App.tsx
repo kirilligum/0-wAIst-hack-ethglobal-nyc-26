@@ -207,7 +207,8 @@ export default function App() {
     try {
       setRefundScheduleResult(await createRefundSchedule({
         orderId,
-        confirmedFundedOrder: true
+        confirmedFundedOrder: true,
+        expirationEpochSeconds: escrowResult?.preparedTransaction?.order.deadlineEpochSeconds
       }));
     } catch (err) {
       setRefundScheduleError(err instanceof Error ? err.message : "Refund scheduling failed");
@@ -710,6 +711,11 @@ export default function App() {
                       <strong>{refundScheduleResult.status}</strong>
                       <span>{refundScheduleResult.message}</span>
                       {refundScheduleResult.schedule ? <span>Schedule {refundScheduleResult.schedule.scheduleId}</span> : null}
+                      {refundScheduleResult.schedule ? (
+                        <span>
+                          Expires {new Date(refundScheduleResult.schedule.expirationEpochSeconds * 1000).toLocaleString()}
+                        </span>
+                      ) : null}
                       {refundScheduleResult.schedule?.hashScanUrl ? (
                         <a href={refundScheduleResult.schedule.hashScanUrl} target="_blank" rel="noreferrer">
                           <ExternalLink size={16} />

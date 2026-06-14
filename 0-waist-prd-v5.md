@@ -50,6 +50,7 @@ Current branch: `codex/full-p0-continuation`
 - [x] Live `ProofEscrow.openOrder` succeeded for registry offer `1`, escrow order `1`, transaction `0.0.9186037@1781417935.795490344`.
 - [x] Seller-node accepted the funded escrow evidence and completed a real OpenAI-compatible seller proxy call.
 - [x] Hedera SDK helper to create a scheduled transaction targeting `ProofEscrow.refundExpired(orderId)`.
+- [x] Live Hedera Scheduled Transaction created for funded escrow order `1`: schedule `0.0.9229938`, transaction `0.0.9186037@1781421835.290442554`.
 - [x] Hedera SDK helper to build/submit a native batch containing `ProofEscrow.settle` and a hash-only HCS receipt message.
 - [x] Hedera Agent Kit package import/readiness wired through `@hashgraph/hedera-agent-kit` core plugins.
 - [x] Demo scripts: `pnpm demo:deploy`, `pnpm demo:verifier`, `pnpm demo:seed`, `pnpm demo:judge`, `pnpm demo:health`, `pnpm test:e2e`, `pnpm mcp`.
@@ -75,6 +76,7 @@ Current branch: `codex/full-p0-continuation`
 - [x] Real OpenAI call path working.
 - [x] Real Hedera Testnet scanner activity working.
 - [x] Real seller registry activity working.
+- [x] Real scheduled refund transaction creation visible on HashScan: `https://hashscan.io/testnet/transaction/0.0.9186037%401781421835.290442554`.
 
 ### Not yet complete for full P0
 
@@ -92,7 +94,8 @@ Current branch: `codex/full-p0-continuation`
 - [x] Local verifier placeholder signing path.
 - [ ] Trusted Chainlink CRE / real zkTLS verifier integration, deferred until CRE deploy access, workflow, Reclaim provider, and Sepolia receiver/target exist.
 - [ ] Real zkTLS provider proof policy wired to the trusted verifier path.
-- [ ] Scheduled refund execution for a real funded order.
+- [x] Hedera Scheduled Transaction creation for a real funded order.
+- [ ] Scheduled refund execution after the scheduled expiry.
 - [ ] Native Hedera batch settlement execution plus HCS receipt for a real verified receipt.
 - [x] Hedera Agent Kit package and core plugin readiness wiring.
 - [ ] Cloudflare Pages deployment credentials and project publish.

@@ -183,6 +183,7 @@ export function createProofRouterMcpServer(env: NodeJS.ProcessEnv = process.env)
     description: "Create the scheduled refund transaction.",
     inputSchema: {
       orderId: z.number().int().positive(),
+      expirationEpochSeconds: z.number().int().positive().optional(),
       confirmedFundedOrder: z.boolean().default(false)
     },
     annotations: { readOnlyHint: false, openWorldHint: true }

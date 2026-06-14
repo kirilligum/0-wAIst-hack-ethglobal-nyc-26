@@ -6,6 +6,7 @@ import {
 
 export const RefundScheduleRequestSchema = z.object({
   orderId: z.number().int().positive(),
+  expirationEpochSeconds: z.number().int().positive().optional(),
   confirmedFundedOrder: z.boolean().default(false)
 });
 
@@ -33,7 +34,8 @@ export async function createRefundScheduleForOrder(
     schedule: await createRefundSchedule({
       config: loadHederaConfig(env),
       proofEscrowContractIdOrAddress: proofEscrow,
-      orderId: input.orderId
+      orderId: input.orderId,
+      expirationEpochSeconds: input.expirationEpochSeconds
     }),
     message: "Scheduled refund transaction created for ProofEscrow.refundExpired(orderId)."
   };

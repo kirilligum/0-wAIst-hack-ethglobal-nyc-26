@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { resolveContractId } from "./contracts.js";
-import { buildRefundExpiredTransaction, scheduledRefundReadiness } from "./schedule.js";
+import {
+  buildRefundExpiredTransaction,
+  resolveRefundScheduleExpirationEpochSeconds,
+  scheduledRefundReadiness
+} from "./schedule.js";
 
 describe("scheduled refund helpers", () => {
   it("accepts Hedera contract IDs and EVM addresses", () => {
@@ -25,5 +29,26 @@ describe("scheduled refund helpers", () => {
     expect(scheduledRefundReadiness({ PROOF_ESCROW_CONTRACT_ID: "0.0.1" }).ready).toBe(true);
     expect(scheduledRefundReadiness({ PROOF_ESCROW_ADDRESS: "0x0000000000000000000000000000000000000001" }).ready).toBe(true);
     expect(scheduledRefundReadiness({}).missing).toEqual(["PROOF_ESCROW_CONTRACT_ID"]);
+  });
+
+  it("normalizes refund schedule expiration into the future", () => {
+    expect(resolveRefundScheduleExpirationEpochSeconds({
+      nowEpochSeconds: 1_800_000_000
+    })).toBe(1_800_001_800);
+    expect(resolveRefundScheduleExpirationEpochSeconds({
+      nowEpochSeconds: 1_800_000_000,
+      expirationEpochSeconds: 1_799_999_999
+    })).toBe(1_800_000_060);
+    expect(resolveRefundScheduleExpirationEpochSeconds({
+      nowEpochSeconds: 1_800_000_000,
+      expirationEpochSeconds: 1_800_003_600
+    })).toBe(1_800_003_600);
+  });
+
+  it("rejects refund schedule expirations beyond Hedera's 62-day window", () => {
+    expect(() => resolveRefundScheduleExpirationEpochSeconds({
+      nowEpochSeconds: 1_800_000_000,
+      expirationEpochSeconds: 1_805_356_801
+    })).toThrow("refund schedule expirationEpochSeconds must be within 62 days");
   });
 });
