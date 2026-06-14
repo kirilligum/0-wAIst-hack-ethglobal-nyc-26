@@ -11,8 +11,10 @@ export const ProofRouterToolNameSchema = z.enum([
   "proofrouter.open_order_via_x402",
   "proofrouter.create_refund_schedule",
   "proofrouter.call_seller_proxy",
-  "proofrouter.wait_for_zktls_receipt",
-  "proofrouter.batch_settle_and_log",
+  "proofrouter.submit_proof_to_cre",
+  "proofrouter.wait_for_cre_report",
+  "proofrouter.settle_from_cre_report",
+  "proofrouter.log_cre_settlement_audit",
   "proofrouter.get_dynamic_wallet_policy",
   "proofrouter.publish_seller_offer"
 ]);

@@ -25,12 +25,25 @@ export interface MarketManifest {
     proxyRegistry?: string;
     proofEscrow?: string;
     verifierRegistry?: string;
+    creReportReceiver?: string;
+  };
+  chainlinkCre?: {
+    workflowId?: string;
+    workflowName?: string;
+    donId?: string;
+    gatewayUrl?: string;
+    target?: string;
+    chainSelector?: string;
+    reportReceiver?: string;
+    settlementShell?: string;
+    proofPolicyHash?: string;
   };
   sellers: Offer[];
   proofPolicy: {
-    mode: "direct_zktls_api";
+    mode: "chainlink_cre_zktls";
     publicArtifactPolicy: "hash_only";
     providerPolicyId?: string;
+    reclaimProviderId?: string;
   };
   serviceMetadata?: {
     serviceId: "0-waist";

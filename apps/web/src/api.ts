@@ -45,12 +45,29 @@ export interface HederaActionStatus {
     inf: { ready: boolean; missing: string[] };
     dynamic: { ready: boolean; missing: string[] };
     x402: { ready: boolean; missing: string[] };
+    creProof: {
+      ready: boolean;
+      missing: string[];
+      workflowId?: string;
+      donId?: string;
+      gatewayUrl?: string;
+      target?: string;
+    };
+    creSettlement: {
+      ready: boolean;
+      missing: string[];
+      shell: string;
+      requiredActions: string[];
+    };
     sellerRegistry: { ready: boolean; missing: string[] };
   };
   actions: {
     openOrderViaX402: { ready: boolean; missing: string[]; tool: string };
     createRefundSchedule: { ready: boolean; missing: string[]; tool: string; requiredFunction: "refundExpired" };
-    batchSettleAndLog: { ready: boolean; missing: string[]; tool: string; requiredActions: string[] };
+    submitProofToCre: { ready: boolean; missing: string[]; tool: string };
+    waitForCreReport: { ready: boolean; missing: string[]; tool: string };
+    settleFromCreReport: { ready: boolean; missing: string[]; tool: string; shell: string; requiredActions: string[] };
+    logCreSettlementAudit: { ready: boolean; missing: string[]; tool: string; requiredActions: string[] };
     publishSellerOffer: { ready: boolean; missing: string[]; tool: string };
   };
 }

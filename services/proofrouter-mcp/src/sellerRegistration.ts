@@ -35,7 +35,7 @@ function buildOffer(
     outputPricePerMTokInf: input.outputPricePerMTokInf,
     fixedFeeInf: input.fixedFeeInf,
     maxBudgetInf: input.maxBudgetInf,
-    proofMode: "direct_zktls_api",
+    proofMode: "chainlink_cre_zktls",
     active: true,
     x402Endpoint: input.x402Endpoint,
     hederaAccount: input.hederaAccount,

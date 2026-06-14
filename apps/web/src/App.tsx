@@ -242,9 +242,21 @@ export default function App() {
               <Activity size={16} />
               Refund schedule
             </div>
-            <div className={hederaActions.actions.batchSettleAndLog.ready ? "action-chip ready" : "action-chip blocked-chip"}>
+            <div className={hederaActions.actions.submitProofToCre.ready ? "action-chip ready" : "action-chip blocked-chip"}>
+              <ShieldCheck size={16} />
+              CRE proof
+            </div>
+            <div className={hederaActions.actions.waitForCreReport.ready ? "action-chip ready" : "action-chip blocked-chip"}>
+              <BadgeCheck size={16} />
+              CRE report
+            </div>
+            <div className={hederaActions.actions.settleFromCreReport.ready ? "action-chip ready" : "action-chip blocked-chip"}>
               <Route size={16} />
-              Batch settle
+              CRE settle
+            </div>
+            <div className={hederaActions.actions.logCreSettlementAudit.ready ? "action-chip ready" : "action-chip blocked-chip"}>
+              <Activity size={16} />
+              CRE audit
             </div>
             <div className={hederaActions.actions.publishSellerOffer.ready ? "action-chip ready" : "action-chip blocked-chip"}>
               <Store size={16} />

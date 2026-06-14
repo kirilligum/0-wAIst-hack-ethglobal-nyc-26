@@ -20,7 +20,7 @@ export type HederaSetupRequest = z.infer<typeof HederaSetupRequestSchema>;
 
 export async function saveAndSeedHedera(input: HederaSetupRequest) {
   const parsed = HederaSetupRequestSchema.parse(input);
-  const env = {
+  const env: NodeJS.ProcessEnv = {
     ...process.env,
     HEDERA_NETWORK: "testnet",
     HEDERA_OPERATOR_ID: parsed.operatorId,
@@ -62,10 +62,23 @@ export async function saveAndSeedHedera(input: HederaSetupRequest) {
       paymentAsset: "INF",
       network: "hedera-testnet",
       auditTopicId: topic.topicId,
+      chainlinkCre: {
+        workflowId: env.CRE_WORKFLOW_ID,
+        workflowName: env.CRE_WORKFLOW_NAME ?? "0-waist-zktls-verifier",
+        donId: env.CRE_DON_ID,
+        gatewayUrl: env.CRE_GATEWAY_URL,
+        target: env.CRE_TARGET,
+        chainSelector: env.CRE_CHAIN_SELECTOR,
+        reportReceiver: env.CRE_REPORT_RECEIVER,
+        settlementShell: env.CRE_SETTLEMENT_SHELL,
+        proofPolicyHash: env.CRE_PROOF_POLICY_HASH
+      },
       sellers: SEEDED_OFFERS,
       proofPolicy: {
-        mode: "direct_zktls_api",
-        publicArtifactPolicy: "hash_only"
+        mode: "chainlink_cre_zktls",
+        publicArtifactPolicy: "hash_only",
+        providerPolicyId: env.ZKTLS_PROVIDER_POLICY_ID,
+        reclaimProviderId: env.RECLAIM_PROVIDER_ID
       }
     });
 

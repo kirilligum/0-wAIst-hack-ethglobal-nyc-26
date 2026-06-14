@@ -35,13 +35,26 @@ async function main() {
     contracts: {
       proxyRegistry: process.env.PROXY_REGISTRY_ADDRESS,
       proofEscrow: process.env.PROOF_ESCROW_ADDRESS,
-      verifierRegistry: process.env.VERIFIER_REGISTRY_ADDRESS
+      verifierRegistry: process.env.VERIFIER_REGISTRY_ADDRESS,
+      creReportReceiver: process.env.CRE_REPORT_RECEIVER
+    },
+    chainlinkCre: {
+      workflowId: process.env.CRE_WORKFLOW_ID,
+      workflowName: process.env.CRE_WORKFLOW_NAME ?? "0-waist-zktls-verifier",
+      donId: process.env.CRE_DON_ID,
+      gatewayUrl: process.env.CRE_GATEWAY_URL,
+      target: process.env.CRE_TARGET,
+      chainSelector: process.env.CRE_CHAIN_SELECTOR,
+      reportReceiver: process.env.CRE_REPORT_RECEIVER,
+      settlementShell: process.env.CRE_SETTLEMENT_SHELL,
+      proofPolicyHash: process.env.CRE_PROOF_POLICY_HASH
     },
     sellers: SEEDED_OFFERS,
     proofPolicy: {
-      mode: "direct_zktls_api",
+      mode: "chainlink_cre_zktls",
       publicArtifactPolicy: "hash_only",
-      providerPolicyId: process.env.ZKTLS_PROVIDER_POLICY_ID
+      providerPolicyId: process.env.ZKTLS_PROVIDER_POLICY_ID,
+      reclaimProviderId: process.env.RECLAIM_PROVIDER_ID
     },
     serviceMetadata: {
       serviceId: "0-waist",

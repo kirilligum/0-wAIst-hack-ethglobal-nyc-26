@@ -176,7 +176,7 @@ export async function executeInferenceOrder(
     responseHash,
     traceDir: "",
     hederaAudit,
-    proofStatus: "Provider response hash recorded; real zkTLS receipt integration is still blocked.",
+    proofStatus: "Provider response hash recorded; Chainlink CRE zkTLS report is still blocked.",
     paymentStatus: hederaAudit.status === "submitted"
       ? "Hash-only Hedera audit submitted; x402 INF escrow is still blocked."
       : `Hedera audit blocked: ${hederaAudit.missing.join(", ")}`,

@@ -11,6 +11,10 @@ describe("Hedera action status", () => {
       HCS_AUDIT_TOPIC_ID: "0.0.9226268",
       HEDERA_OPERATOR_ID: "0.0.9186037",
       HEDERA_OPERATOR_KEY: "302e",
+      DYNAMIC_ENVIRONMENT_ID: "env",
+      DYNAMIC_CLIENT_ID: "client",
+      DYNAMIC_WALLET_POLICY_ID: "policy",
+      X402_FACILITATOR_URL: "https://api.testnet.blocky402.com",
       X402_NETWORK: "hedera-testnet",
       X402_PAYMENT_ASSET: "INF",
       SELLER_EVM_ADDRESS: "0x726a206d0b66730454e175a34bcf9f9fbc086458"
@@ -19,10 +23,11 @@ describe("Hedera action status", () => {
     expect(status.prerequisites.contracts.ready).toBe(true);
     expect(status.prerequisites.inf.ready).toBe(true);
     expect(status.actions.createRefundSchedule.ready).toBe(true);
-    expect(status.actions.batchSettleAndLog.ready).toBe(true);
-    expect(status.actions.openOrderViaX402.ready).toBe(false);
-    expect(status.actions.openOrderViaX402.missing).toContain("DYNAMIC_ENVIRONMENT_ID");
-    expect(status.actions.openOrderViaX402.missing).toContain("X402_FACILITATOR_URL");
+    expect(status.actions.openOrderViaX402.ready).toBe(true);
+    expect(status.actions.submitProofToCre.ready).toBe(false);
+    expect(status.actions.submitProofToCre.missing).toContain("RECLAIM_PROVIDER_ID");
+    expect(status.actions.settleFromCreReport.ready).toBe(false);
+    expect(status.actions.settleFromCreReport.missing).toContain("CRE_SETTLEMENT_SHELL");
     expect(status.actions.publishSellerOffer.ready).toBe(true);
   });
 });

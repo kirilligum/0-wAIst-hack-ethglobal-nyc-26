@@ -49,12 +49,20 @@ export const PROOFROUTER_TOOLS: ProofRouterTool[] = [
     description: "Call the seller proxy after escrow funding."
   },
   {
-    name: "proofrouter.wait_for_zktls_receipt",
-    description: "Wait for a verified zkTLS receipt."
+    name: "proofrouter.submit_proof_to_cre",
+    description: "Submit a compact zkTLS proof presentation to the deployed Chainlink CRE workflow."
   },
   {
-    name: "proofrouter.batch_settle_and_log",
-    description: "Submit settlement and HCS receipt as one Hedera batch."
+    name: "proofrouter.wait_for_cre_report",
+    description: "Wait for a Chainlink CRE DON report for the order proof."
+  },
+  {
+    name: "proofrouter.settle_from_cre_report",
+    description: "Settle or authorize ProofEscrow from a CRE-authenticated report."
+  },
+  {
+    name: "proofrouter.log_cre_settlement_audit",
+    description: "Write the HCS CRE_RECEIPT audit message for the selected settlement."
   },
   {
     name: "proofrouter.get_dynamic_wallet_policy",
@@ -70,6 +78,54 @@ function missing(keys: string[], env: NodeJS.ProcessEnv): string[] {
   return keys.filter((key) => !env[key]);
 }
 
+function creProofReadiness(env: NodeJS.ProcessEnv) {
+  const missingKeys = missing([
+    "RECLAIM_PROVIDER_ID",
+    "ZKTLS_VERIFIER_URL",
+    "ZKTLS_PROVIDER_POLICY_ID",
+    "CRE_WORKFLOW_ID",
+    "CRE_DON_ID",
+    "CRE_GATEWAY_URL",
+    "CRE_TARGET"
+  ], env);
+
+  return {
+    ready: missingKeys.length === 0,
+    missing: missingKeys,
+    workflowId: env.CRE_WORKFLOW_ID,
+    donId: env.CRE_DON_ID,
+    gatewayUrl: env.CRE_GATEWAY_URL,
+    target: env.CRE_TARGET
+  };
+}
+
+function creSettlementReadiness(env: NodeJS.ProcessEnv) {
+  const batchSettlement = batchSettlementReadiness(env);
+  const shell = env.CRE_SETTLEMENT_SHELL;
+  const missingKeys = [
+    ...missing([
+      "CRE_WORKFLOW_ID",
+      "CRE_DON_ID",
+      "CRE_CHAIN_SELECTOR",
+      "CRE_REPORT_RECEIVER",
+      "CRE_SETTLEMENT_SHELL"
+    ], env),
+    ...(shell === "hedera-batch" ? batchSettlement.missing : []),
+    ...(shell === "direct-cre-report" && !(env.PROOF_ESCROW_CONTRACT_ID || env.PROOF_ESCROW_ADDRESS)
+      ? ["PROOF_ESCROW_CONTRACT_ID"]
+      : [])
+  ];
+
+  return {
+    ready: missingKeys.length === 0 && (shell === "direct-cre-report" || shell === "hedera-batch"),
+    missing: Array.from(new Set(missingKeys)),
+    shell: shell ?? "unselected",
+    requiredActions: shell === "hedera-batch"
+      ? ["CRE report verification", "ProofEscrow.settle", "HCS.CRE_RECEIPT"]
+      : ["CRE report verification", "ProofEscrow.settleFromCreReport", "HCS.CRE_RECEIPT"]
+  };
+}
+
 export function getHederaActionStatus(env: NodeJS.ProcessEnv = process.env) {
   const contractMissing = [
     ...(env.PROXY_REGISTRY_CONTRACT_ID || env.PROXY_REGISTRY_ADDRESS ? [] : ["PROXY_REGISTRY_CONTRACT_ID"]),
@@ -80,7 +136,8 @@ export function getHederaActionStatus(env: NodeJS.ProcessEnv = process.env) {
   const dynamic = dynamicReadiness(env);
   const x402 = x402Readiness(env);
   const scheduledRefund = scheduledRefundReadiness(env);
-  const batchSettlement = batchSettlementReadiness(env);
+  const creProof = creProofReadiness(env);
+  const creSettlement = creSettlementReadiness(env);
   const sellerRegistry = proxyRegistryReadiness(env);
 
   return {
@@ -96,6 +153,8 @@ export function getHederaActionStatus(env: NodeJS.ProcessEnv = process.env) {
       },
       dynamic,
       x402,
+      creProof,
+      creSettlement,
       sellerRegistry
     },
     actions: {
@@ -108,9 +167,26 @@ export function getHederaActionStatus(env: NodeJS.ProcessEnv = process.env) {
         ...scheduledRefund,
         tool: "proofrouter.create_refund_schedule"
       },
-      batchSettleAndLog: {
-        ...batchSettlement,
-        tool: "proofrouter.batch_settle_and_log"
+      submitProofToCre: {
+        ...creProof,
+        tool: "proofrouter.submit_proof_to_cre"
+      },
+      waitForCreReport: {
+        ...creProof,
+        tool: "proofrouter.wait_for_cre_report"
+      },
+      settleFromCreReport: {
+        ...creSettlement,
+        tool: "proofrouter.settle_from_cre_report"
+      },
+      logCreSettlementAudit: {
+        ready: creSettlement.ready && Boolean(env.HCS_AUDIT_TOPIC_ID),
+        missing: Array.from(new Set([
+          ...creSettlement.missing,
+          ...(!env.HCS_AUDIT_TOPIC_ID ? ["HCS_AUDIT_TOPIC_ID"] : [])
+        ])),
+        tool: "proofrouter.log_cre_settlement_audit",
+        requiredActions: ["HCS.CRE_RECEIPT"]
       },
       publishSellerOffer: {
         ...sellerRegistry,

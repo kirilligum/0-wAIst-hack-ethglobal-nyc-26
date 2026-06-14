@@ -15,7 +15,7 @@ export const SEEDED_OFFERS: Offer[] = OfferListSchema.parse([
     outputPricePerMTokInf: 0.12,
     fixedFeeInf: 0.01,
     maxBudgetInf: 0.5,
-    proofMode: "direct_zktls_api",
+    proofMode: "chainlink_cre_zktls",
     active: true,
     x402Endpoint: "https://alpha.0waist.local/x402",
     hederaAccount: "0.0.5001",
@@ -32,7 +32,7 @@ export const SEEDED_OFFERS: Offer[] = OfferListSchema.parse([
     outputPricePerMTokInf: 0.14,
     fixedFeeInf: 0.012,
     maxBudgetInf: 0.75,
-    proofMode: "direct_zktls_api",
+    proofMode: "chainlink_cre_zktls",
     active: true,
     x402Endpoint: "https://beta.0waist.local/x402",
     hederaAccount: "0.0.5002",
@@ -49,7 +49,7 @@ export const SEEDED_OFFERS: Offer[] = OfferListSchema.parse([
     outputPricePerMTokInf: 0.18,
     fixedFeeInf: 0.02,
     maxBudgetInf: 1,
-    proofMode: "direct_zktls_api",
+    proofMode: "chainlink_cre_zktls",
     active: true,
     x402Endpoint: "https://gamma.0waist.local/x402",
     hederaAccount: "0.0.5003",
@@ -76,7 +76,13 @@ export function readRegisteredOffers(env: NodeJS.ProcessEnv = process.env): Offe
     return [];
   }
   const parsed = JSON.parse(readFileSync(path, "utf8"));
-  return RegisteredOfferListSchema.parse(parsed);
+  const normalized = Array.isArray(parsed)
+    ? parsed.map((offer) => ({
+      ...offer,
+      proofMode: offer.proofMode === "direct_zktls_api" ? "chainlink_cre_zktls" : offer.proofMode
+    }))
+    : parsed;
+  return RegisteredOfferListSchema.parse(normalized);
 }
 
 function mergeOffers(offers: Offer[]): Offer[] {

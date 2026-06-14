@@ -3,7 +3,7 @@ import { z } from "zod";
 export const SellerIdSchema = z.string().min(1).max(64).regex(/^[a-z0-9][a-z0-9-]*$/);
 export type SellerId = z.infer<typeof SellerIdSchema>;
 
-export const ProofModeSchema = z.enum(["direct_zktls_api"]);
+export const ProofModeSchema = z.enum(["chainlink_cre_zktls"]);
 export type ProofMode = z.infer<typeof ProofModeSchema>;
 
 export const RegistryStatusSchema = z.enum(["seeded", "local", "submitted", "blocked"]);

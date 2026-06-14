@@ -14,7 +14,7 @@ import { hashScanTransactionUrl, serializeAuditMessage } from "./hcs.js";
 export interface BatchSettlementReadiness {
   ready: boolean;
   missing: string[];
-  requiredActions: ["ProofEscrow.settle", "HCS.RECEIPT"];
+  requiredActions: ["ProofEscrow.settle", "HCS.CRE_RECEIPT"];
 }
 
 export function batchSettlementReadiness(env: NodeJS.ProcessEnv = process.env): BatchSettlementReadiness {
@@ -25,7 +25,7 @@ export function batchSettlementReadiness(env: NodeJS.ProcessEnv = process.env): 
   return {
     ready: missing.length === 0,
     missing,
-    requiredActions: ["ProofEscrow.settle", "HCS.RECEIPT"]
+    requiredActions: ["ProofEscrow.settle", "HCS.CRE_RECEIPT"]
   };
 }
 
@@ -103,8 +103,8 @@ export async function buildSettlementBatch(input: {
   verifierSignature: string;
   auditMessage: AuditMessage;
 }): Promise<BatchTransaction> {
-  if (input.auditMessage.type !== "RECEIPT" && input.auditMessage.type !== "SETTLEMENT") {
-    throw new Error("Settlement batch audit message must be RECEIPT or SETTLEMENT");
+  if (!["RECEIPT", "CRE_RECEIPT", "SETTLEMENT"].includes(input.auditMessage.type)) {
+    throw new Error("Settlement batch audit message must be RECEIPT, CRE_RECEIPT, or SETTLEMENT");
   }
 
   const client = createHederaClient(input.config);

@@ -29,9 +29,16 @@ const FULL_P0_ENV = [
   "X402_FACILITATOR_URL",
   "X402_NETWORK",
   "X402_PAYMENT_ASSET",
+  "RECLAIM_PROVIDER_ID",
   "ZKTLS_VERIFIER_URL",
   "ZKTLS_PROVIDER_POLICY_ID",
-  "VERIFIER_SIGNER_ADDRESS"
+  "CRE_WORKFLOW_ID",
+  "CRE_DON_ID",
+  "CRE_GATEWAY_URL",
+  "CRE_TARGET",
+  "CRE_CHAIN_SELECTOR",
+  "CRE_REPORT_RECEIVER",
+  "CRE_SETTLEMENT_SHELL"
 ];
 
 function missing(keys: string[]): string[] {
@@ -47,6 +54,12 @@ const scheduledRefund = scheduledRefundReadiness(process.env);
 const batchSettlement = batchSettlementReadiness(process.env);
 const agentKit = agentKitReadiness();
 const hederaMissing = getMissingHederaEnv(process.env);
+const creSettlement = {
+  selectedShell: process.env.CRE_SETTLEMENT_SHELL ?? "unselected",
+  directReportReceiver: process.env.CRE_REPORT_RECEIVER,
+  chainSelector: process.env.CRE_CHAIN_SELECTOR,
+  fallbackBatch: batchSettlement
+};
 
 const result = {
   status: fullMissing.length === 0 && pathOk && agentKit.ready ? "pass" : "fail",
@@ -62,7 +75,7 @@ const result = {
     dynamic,
     x402,
     scheduledRefund,
-    batchSettlement,
+    creSettlement,
     agentKit
   },
   message: minimalMissing.length > 0

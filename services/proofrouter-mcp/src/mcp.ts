@@ -214,12 +214,16 @@ export function createProofRouterMcpServer(env: NodeJS.ProcessEnv = process.env)
     annotations: { readOnlyHint: false, openWorldHint: true }
   }, (input) => guardedTool(async () => await registerSellerOffer(input, env)));
 
-  for (const name of [
+  const blockedLiveTools = [
     "proofrouter.call_seller_proxy",
-    "proofrouter.wait_for_zktls_receipt",
-    "proofrouter.batch_settle_and_log",
+    "proofrouter.submit_proof_to_cre",
+    "proofrouter.wait_for_cre_report",
+    "proofrouter.settle_from_cre_report",
+    "proofrouter.log_cre_settlement_audit",
     "proofrouter.get_dynamic_wallet_policy"
-  ] as const) {
+  ] as const;
+
+  for (const name of blockedLiveTools) {
     const tool = PROOFROUTER_TOOLS.find((candidate) => candidate.name === name);
     server.registerTool(name, {
       description: tool?.description ?? name,
