@@ -20,6 +20,29 @@ export async function fetchOffers(): Promise<Offer[]> {
   return body.offers;
 }
 
+export interface EnsResolution {
+  status: "resolved" | "unresolved" | "blocked";
+  name: string;
+  network: "sepolia";
+  chainId: 11155111;
+  displayName?: string;
+  address?: string;
+  avatarUrl?: string;
+  resolverAddress?: string;
+  source: "ethereum-sepolia";
+  message: string;
+}
+
+export async function fetchEnsResolution(name: string): Promise<EnsResolution> {
+  const response = await fetch(`${API_BASE_URL}/api/ens/resolve?name=${encodeURIComponent(name)}`);
+  const body = await response.json();
+  if (!response.ok) {
+    const apiError = body as ApiErrorBody;
+    throw new Error(apiError.error?.message ?? `ENS lookup failed with HTTP ${response.status}`);
+  }
+  return body as EnsResolution;
+}
+
 export async function createOrder(input: {
   prompt: string;
   budgetInf: number;
@@ -198,6 +221,7 @@ export async function registerSeller(input: {
   x402Endpoint: string;
   hederaAccount: string;
   sellerEvmAddress?: string;
+  sellerEnsName?: string;
   summary: string;
   publishOnChain: boolean;
 }): Promise<SellerRegistrationResult> {

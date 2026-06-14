@@ -29,6 +29,7 @@ async function main() {
     x402Endpoint: process.env.SELLER_X402_ENDPOINT ?? "http://localhost:8790/x402",
     hederaAccount: process.env.SELLER_HEDERA_ACCOUNT ?? process.env.HEDERA_OPERATOR_ID ?? "",
     sellerEvmAddress: process.env.SELLER_EVM_ADDRESS ?? process.env.HEDERA_OPERATOR_EVM_ADDRESS,
+    sellerEnsName: process.env.SELLER_ENS_NAME || undefined,
     summary: process.env.SELLER_SUMMARY ?? "Local seller proxy registered for the live Hedera demo.",
     hfsManifestFileId: process.env.HFS_MARKET_MANIFEST_FILE_ID,
     publishOnChain: process.env.SELLER_PUBLISH_ON_CHAIN !== "false"

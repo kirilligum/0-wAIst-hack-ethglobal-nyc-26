@@ -194,6 +194,7 @@ export function createProofRouterMcpServer(env: NodeJS.ProcessEnv = process.env)
     inputSchema: {
       sellerId: z.string().min(1),
       displayName: z.string().min(1),
+      sellerEnsName: z.string().optional(),
       modelId: z.string().min(1).default(env.OPENAI_MODEL ?? "gpt-4.1-mini"),
       provider: z.string().min(1).default("openai-compatible"),
       x402Endpoint: z.string().url().default("http://localhost:8790/x402"),

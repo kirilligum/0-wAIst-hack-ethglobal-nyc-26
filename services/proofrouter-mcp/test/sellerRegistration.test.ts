@@ -12,6 +12,7 @@ describe("seller registration", () => {
     const result = await registerSellerOffer({
       sellerId: "local-dev",
       displayName: "Local Dev Seller",
+      sellerEnsName: "Local-Dev.ETH",
       modelId: "gpt-4.1-mini",
       provider: "openai-compatible",
       x402Endpoint: "http://localhost:8790/x402",
@@ -25,7 +26,10 @@ describe("seller registration", () => {
 
     expect(result.status).toBe("local");
     expect(result.offer.registryStatus).toBe("local");
-    expect(listProxyOffers({ REGISTERED_OFFERS_FILE: registeredFile }).some((offer) => offer.sellerId === "local-dev")).toBe(true);
+    expect(result.offer.sellerEnsName).toBe("local-dev.eth");
+    expect(listProxyOffers({ REGISTERED_OFFERS_FILE: registeredFile }).some((offer) => (
+      offer.sellerId === "local-dev" && offer.sellerEnsName === "local-dev.eth"
+    ))).toBe(true);
   });
 
   it("blocks on-chain publication until the seller EVM address exists", async () => {

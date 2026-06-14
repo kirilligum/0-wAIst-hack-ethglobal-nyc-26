@@ -28,6 +28,7 @@ function buildOffer(
   return {
     offerId: localOfferId(input, registry?.registryOfferId),
     sellerId: input.sellerId,
+    sellerEnsName: input.sellerEnsName,
     displayName: input.displayName,
     modelId: input.modelId,
     provider: input.provider,
