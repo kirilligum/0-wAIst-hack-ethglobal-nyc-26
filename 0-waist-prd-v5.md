@@ -34,7 +34,7 @@ Current branch: `codex/full-p0-continuation`
 - [x] Live Hedera Testnet HCS topic `0.0.9226268`.
 - [x] Live Hedera Testnet HFS market manifest `0.0.9226269`.
 - [x] Live Hedera Testnet HTS `INF` token `0.0.9226625`.
-- [x] Live Hedera Testnet contracts: `ProxyRegistry` `0.0.9226646`, `ProofEscrow` `0.0.9226648`, `VerifierRegistry` `0.0.9226643`.
+- [x] Live Hedera Testnet contracts: `ProxyRegistry` `0.0.9226646`, `ProofEscrow` `0.0.9229559`, `VerifierRegistry` `0.0.9226643`. `ProofEscrow` was redeployed with automatic INF token association after the earlier `0.0.9226648` escrow could not receive HTS `INF`.
 - [x] Local verifier EVM signer generated into ignored `.env` and approved in live `VerifierRegistry`; approval transaction `0.0.9186037@1781391308.700334793`.
 - [x] Local verifier placeholder now signs `ProofEscrow`-compatible `VerifiedReceipt` payloads while Chainlink CRE login is blocked. This is executable demo evidence, not trusted CRE completion evidence.
 - [x] Live API order audit transaction visible on HashScan: `0.0.9186037@1781386460.953715803`.
@@ -43,8 +43,12 @@ Current branch: `codex/full-p0-continuation`
 - [x] Frontend can prepare a `ProofEscrow.openOrder` x402 escrow transaction for sellers with numeric `registryOfferId`.
 - [x] Frontend/API Hedera action readiness for INF, contracts, x402 escrow, seller registry publication, refund schedule, and batch settlement.
 - [x] Frontend/API read-only Mirror Node diagnostics for buyer/seller INF association, buyer INF balance, and ProofEscrow INF allowance.
+- [x] Guarded Hedera SDK/API/MCP/UI action to approve a bounded buyer INF allowance for `ProofEscrow`.
+- [x] Live buyer INF allowance approval for `ProofEscrow` `0.0.9229559`: `0.0.9186037@1781417880.417636264`.
 - [x] Hedera SDK helper to ABI-encode, build, and submit `ProofEscrow.openOrder(offerId, promptHash, requestHash, deadline)`.
 - [x] ProofRouter HTTP/MCP path prepares `ProofEscrow.openOrder` calldata and blocks live submission until the configured signer is confirmed as the buyer wallet.
+- [x] Live `ProofEscrow.openOrder` succeeded for registry offer `1`, escrow order `1`, transaction `0.0.9186037@1781417935.795490344`.
+- [x] Seller-node accepted the funded escrow evidence and completed a real OpenAI-compatible seller proxy call.
 - [x] Hedera SDK helper to create a scheduled transaction targeting `ProofEscrow.refundExpired(orderId)`.
 - [x] Hedera SDK helper to build/submit a native batch containing `ProofEscrow.settle` and a hash-only HCS receipt message.
 - [x] Hedera Agent Kit package import/readiness wired through `@hashgraph/hedera-agent-kit` core plugins.
@@ -79,8 +83,10 @@ Current branch: `codex/full-p0-continuation`
 - [x] Seller offer publication into `ProxyRegistry`.
 - [x] `ProofEscrow.openOrder` transaction builder and ProofRouter preparation path.
 - [x] Read-only Mirror Node validation for buyer/seller INF association and buyer ProofEscrow allowance.
-- [ ] Buyer/seller INF association, funding, and allowance execution through the real wallet path.
-- [ ] Live buyer-wallet contract call for order open, plus live settlement and refund execution.
+- [x] Guarded buyer INF allowance approval transaction helper for `ProofEscrow`.
+- [x] Live buyer-wallet `ProofEscrow.openOrder` call with HTS `INF` locked in escrow.
+- [ ] Dynamic/x402 facilitator execution path around the live buyer-wallet contract call.
+- [ ] Live settlement and refund execution.
 - [ ] Dynamic wallet login/delegated policy.
 - [ ] Hedera x402 INF escrow funding.
 - [x] Local verifier placeholder signing path.

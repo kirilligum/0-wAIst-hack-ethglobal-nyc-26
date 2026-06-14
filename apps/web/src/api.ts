@@ -115,6 +115,35 @@ export async function fetchInfWalletDiagnostics(): Promise<InfWalletDiagnostics>
   return await response.json() as InfWalletDiagnostics;
 }
 
+export interface ApproveInfAllowanceResult {
+  status: "submitted" | "blocked";
+  missing?: string[];
+  ownerAccountId?: string;
+  spenderContractIdOrAddress?: string;
+  tokenId?: string;
+  amountInf?: number;
+  transactionId?: string;
+  hashScanUrl?: string;
+  message: string;
+}
+
+export async function approveInfAllowance(input: {
+  amountInf: number;
+  confirmedOwner: boolean;
+}): Promise<ApproveInfAllowanceResult> {
+  const response = await fetch(`${API_BASE_URL}/api/inf-wallets/approve-allowance`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input)
+  });
+  const body = await response.json();
+  if (!response.ok && body?.status !== "blocked") {
+    const apiError = body as ApiErrorBody;
+    throw new Error(apiError.error?.message ?? `INF allowance approval failed with HTTP ${response.status}`);
+  }
+  return body as ApproveInfAllowanceResult;
+}
+
 export interface HederaSetupResult {
   status: "seeded";
   topic: {

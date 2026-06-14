@@ -8,6 +8,7 @@ export const ProofRouterToolNameSchema = z.enum([
   "proofrouter.read_hcs_audit_history",
   "proofrouter.get_buyer_prompt_history",
   "proofrouter.build_context_packet",
+  "proofrouter.approve_inf_allowance",
   "proofrouter.open_order_via_x402",
   "proofrouter.create_refund_schedule",
   "proofrouter.call_seller_proxy",

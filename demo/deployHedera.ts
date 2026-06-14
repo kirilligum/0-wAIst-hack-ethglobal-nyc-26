@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { deploy0WaistContracts, createOrLoadInfToken, loadHederaConfig } from "@0waist/hedera";
+import { deploy0WaistContracts, createOrLoadInfToken, deployProofEscrowContract, loadHederaConfig } from "@0waist/hedera";
 import { updateEnvFile } from "../services/proofrouter-mcp/src/envFile.js";
 
 function hasContractEnv(): boolean {
@@ -19,15 +19,32 @@ async function main() {
   };
   await updateEnvFile(values);
 
-  const contracts = hasContractEnv()
-    ? undefined
-    : await deploy0WaistContracts({
+  const redeployProofEscrow = process.env.REDEPLOY_PROOF_ESCROW === "true";
+  const contracts = !hasContractEnv()
+    ? await deploy0WaistContracts({
       config: {
         ...config,
         infTokenId: inf.tokenId
       },
       infTokenEvmAddress: inf.evmAddress
-    });
+    })
+    : undefined;
+
+  if (redeployProofEscrow && !contracts && (!process.env.VERIFIER_REGISTRY_ADDRESS || !process.env.PROXY_REGISTRY_ADDRESS)) {
+    throw new Error("REDEPLOY_PROOF_ESCROW requires VERIFIER_REGISTRY_ADDRESS and PROXY_REGISTRY_ADDRESS");
+  }
+
+  const proofEscrow = redeployProofEscrow && !contracts
+    ? await deployProofEscrowContract({
+      config: {
+        ...config,
+        infTokenId: inf.tokenId
+      },
+      infTokenEvmAddress: inf.evmAddress,
+      verifierRegistryEvmAddress: process.env.VERIFIER_REGISTRY_ADDRESS!,
+      proxyRegistryEvmAddress: process.env.PROXY_REGISTRY_ADDRESS!
+    })
+    : undefined;
 
   if (contracts) {
     values.PROXY_REGISTRY_ADDRESS = contracts.proxyRegistry.evmAddress;
@@ -36,6 +53,10 @@ async function main() {
     values.PROOF_ESCROW_CONTRACT_ID = contracts.proofEscrow.contractId;
     values.VERIFIER_REGISTRY_ADDRESS = contracts.verifierRegistry.evmAddress;
     values.VERIFIER_REGISTRY_CONTRACT_ID = contracts.verifierRegistry.contractId;
+  }
+  if (proofEscrow) {
+    values.PROOF_ESCROW_ADDRESS = proofEscrow.evmAddress;
+    values.PROOF_ESCROW_CONTRACT_ID = proofEscrow.contractId;
   }
 
   await updateEnvFile(values);
@@ -54,7 +75,9 @@ async function main() {
         proofEscrow: contracts.proofEscrow,
         verifierRegistry: contracts.verifierRegistry
       }
-      : "loaded from existing .env values",
+      : proofEscrow
+        ? { proofEscrow }
+        : "loaded from existing .env values",
     envUpdated: Object.keys(values)
   }, null, 2));
 }

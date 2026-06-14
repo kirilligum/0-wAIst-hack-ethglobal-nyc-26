@@ -26,6 +26,7 @@ describe("ProofRouter MCP stdio server", () => {
       await client.connect(transport);
       const tools = await client.listTools();
       expect(tools.tools.map((tool) => tool.name)).toContain("proofrouter.list_proxy_offers");
+      expect(tools.tools.map((tool) => tool.name)).toContain("proofrouter.approve_inf_allowance");
       expect(tools.tools.map((tool) => tool.name)).toContain("proofrouter.submit_proof_to_cre");
       expect(tools.tools.map((tool) => tool.name)).toContain("proofrouter.settle_from_cre_report");
 

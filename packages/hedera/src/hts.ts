@@ -1,4 +1,5 @@
 import {
+  AccountAllowanceApproveTransaction,
   AccountId,
   PrivateKey,
   TokenAssociateTransaction,
@@ -9,6 +10,7 @@ import {
   TransferTransaction
 } from "@hashgraph/sdk";
 import { createHederaClient, HederaConfig } from "./config.js";
+import { resolveContractId } from "./contracts.js";
 import { hashScanTransactionUrl } from "./hcs.js";
 
 export const INF_ASSET = "INF";
@@ -25,6 +27,15 @@ export interface InfTokenResult {
 }
 
 export interface HederaTransferResult {
+  transactionId: string;
+  hashScanUrl: string;
+}
+
+export interface InfAllowanceApprovalResult {
+  ownerAccountId: string;
+  spenderContractIdOrAddress: string;
+  tokenId: string;
+  amountBaseUnits: number;
   transactionId: string;
   hashScanUrl: string;
 }
@@ -87,6 +98,12 @@ export function assertProductAssetInf(asset: string): void {
 
 export function tokenIdToEvmAddress(tokenId: string): string {
   return `0x${TokenId.fromString(tokenId).toSolidityAddress()}`;
+}
+
+function assertPositiveBaseUnits(value: number, field: string): void {
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(`${field} must be a positive integer in base units`);
+  }
 }
 
 function mirrorBaseUrl(network = "testnet"): string {
@@ -248,6 +265,62 @@ export async function getInfWalletDiagnostics(
     proofEscrowAllowance,
     missing: readinessMissing
   };
+}
+
+export function buildApproveInfAllowanceTransaction(input: {
+  ownerAccountId: string;
+  spenderContractIdOrAddress: string;
+  tokenId: string;
+  amountBaseUnits: number;
+}): AccountAllowanceApproveTransaction {
+  assertPositiveBaseUnits(input.amountBaseUnits, "INF allowance amount");
+  return new AccountAllowanceApproveTransaction()
+    .approveTokenAllowance(
+      TokenId.fromString(input.tokenId),
+      AccountId.fromString(input.ownerAccountId),
+      resolveContractId(input.spenderContractIdOrAddress),
+      input.amountBaseUnits
+    );
+}
+
+export async function approveInfAllowance(input: {
+  config: HederaConfig;
+  spenderContractIdOrAddress: string;
+  amountBaseUnits: number;
+  ownerAccountId?: string;
+  ownerKey?: string;
+  tokenId?: string;
+}): Promise<InfAllowanceApprovalResult> {
+  const tokenId = input.tokenId ?? input.config.infTokenId;
+  if (!tokenId) {
+    throw new Error("HTS_INF_TOKEN_ID is required to approve INF allowance");
+  }
+  const ownerAccountId = input.ownerAccountId ?? input.config.operatorId;
+  const transaction = buildApproveInfAllowanceTransaction({
+    ownerAccountId,
+    spenderContractIdOrAddress: input.spenderContractIdOrAddress,
+    tokenId,
+    amountBaseUnits: input.amountBaseUnits
+  });
+
+  const client = createHederaClient(input.config);
+  try {
+    const response = input.ownerKey && ownerAccountId !== input.config.operatorId
+      ? await (await transaction.freezeWith(client).sign(PrivateKey.fromString(input.ownerKey))).execute(client)
+      : await transaction.execute(client);
+    await response.getReceipt(client);
+    const transactionId = response.transactionId.toString();
+    return {
+      ownerAccountId,
+      spenderContractIdOrAddress: input.spenderContractIdOrAddress,
+      tokenId,
+      amountBaseUnits: input.amountBaseUnits,
+      transactionId,
+      hashScanUrl: hashScanTransactionUrl(transactionId, input.config.network)
+    };
+  } finally {
+    client.close();
+  }
 }
 
 export async function createOrLoadInfToken(config: HederaConfig): Promise<InfTokenResult> {

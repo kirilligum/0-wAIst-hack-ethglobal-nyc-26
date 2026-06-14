@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { Offer, OrderMode, OrderResult, SellerRegistrationResult } from "@0waist/schemas";
 import {
+  approveInfAllowance,
+  ApproveInfAllowanceResult,
   createOrder,
   fetchHederaActionStatus,
   fetchInfWalletDiagnostics,
@@ -59,6 +61,9 @@ export default function App() {
   const [escrowLoading, setEscrowLoading] = useState(false);
   const [escrowResult, setEscrowResult] = useState<OpenEscrowOrderResult | null>(null);
   const [escrowError, setEscrowError] = useState<string | null>(null);
+  const [allowanceLoading, setAllowanceLoading] = useState(false);
+  const [allowanceResult, setAllowanceResult] = useState<ApproveInfAllowanceResult | null>(null);
+  const [allowanceError, setAllowanceError] = useState<string | null>(null);
   const [sellerForm, setSellerForm] = useState({
     sellerId: "local-seller",
     displayName: "Local Seller Proxy",
@@ -173,6 +178,23 @@ export default function App() {
       setEscrowError(err instanceof Error ? err.message : "Escrow order preparation failed");
     } finally {
       setEscrowLoading(false);
+    }
+  }
+
+  async function runAllowanceApproval() {
+    setAllowanceLoading(true);
+    setAllowanceError(null);
+    try {
+      const next = await approveInfAllowance({
+        amountInf: 0.5,
+        confirmedOwner: true
+      });
+      setAllowanceResult(next);
+      setInfWallets(await fetchInfWalletDiagnostics());
+    } catch (err) {
+      setAllowanceError(err instanceof Error ? err.message : "INF allowance approval failed");
+    } finally {
+      setAllowanceLoading(false);
     }
   }
 
@@ -323,6 +345,26 @@ export default function App() {
             {infWallets.missing.length ? (
               <div className="wallet-missing">Missing {infWallets.missing.join(", ")}</div>
             ) : null}
+            <div className="wallet-action">
+              <button
+                className="secondary"
+                type="button"
+                disabled={allowanceLoading || Boolean(infWallets.proofEscrowAllowance?.amountInf)}
+                onClick={() => void runAllowanceApproval()}
+              >
+                {allowanceLoading ? <LoaderCircle className="spin" size={18} /> : <CircleDollarSign size={18} />}
+                Approve 0.5 INF
+              </button>
+              {allowanceError ? <span>{allowanceError}</span> : null}
+              {allowanceResult?.hashScanUrl ? (
+                <a href={allowanceResult.hashScanUrl} target="_blank" rel="noreferrer">
+                  <ExternalLink size={16} />
+                  Open allowance transaction
+                </a>
+              ) : allowanceResult ? (
+                <span>{allowanceResult.message}</span>
+              ) : null}
+            </div>
           </section>
         ) : null}
 

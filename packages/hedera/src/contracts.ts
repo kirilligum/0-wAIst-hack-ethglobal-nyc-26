@@ -134,15 +134,19 @@ export async function deployContract(input: {
   compiled: CompiledContract;
   constructorParameters?: ContractFunctionParameters;
   gas?: number;
+  maxAutomaticTokenAssociations?: number;
 }): Promise<ContractDeploymentResult> {
   const client = createHederaClient(input.config);
   try {
-    const response = await new ContractCreateFlow()
+    const transaction = new ContractCreateFlow()
       .setBytecode(input.compiled.bytecode)
       .setGas(input.gas ?? 5_000_000)
       .setConstructorParameters(input.constructorParameters ?? new ContractFunctionParameters())
-      .setContractMemo(`0waist.${input.compiled.contractName}`)
-      .execute(client);
+      .setContractMemo(`0waist.${input.compiled.contractName}`);
+    if (input.maxAutomaticTokenAssociations !== undefined) {
+      transaction.setMaxAutomaticTokenAssociations(input.maxAutomaticTokenAssociations);
+    }
+    const response = await transaction.execute(client);
     const receipt = await response.getReceipt(client);
     const contractId = receipt.contractId?.toString();
     if (!contractId) {
@@ -159,6 +163,26 @@ export async function deployContract(input: {
   } finally {
     client.close();
   }
+}
+
+export async function deployProofEscrowContract(input: {
+  config: HederaConfig;
+  infTokenEvmAddress: string;
+  verifierRegistryEvmAddress: string;
+  proxyRegistryEvmAddress: string;
+  sourceDir?: string;
+}): Promise<ContractDeploymentResult> {
+  const compiled = await compileSolidityContracts(input.sourceDir);
+  return await deployContract({
+    config: input.config,
+    compiled: compiled.ProofEscrow,
+    constructorParameters: new ContractFunctionParameters()
+      .addAddress(input.infTokenEvmAddress)
+      .addAddress(input.verifierRegistryEvmAddress)
+      .addAddress(input.proxyRegistryEvmAddress),
+    gas: 6_000_000,
+    maxAutomaticTokenAssociations: 1
+  });
 }
 
 export async function deploy0WaistContracts(input: {
@@ -182,7 +206,8 @@ export async function deploy0WaistContracts(input: {
       .addAddress(input.infTokenEvmAddress)
       .addAddress(verifierRegistry.evmAddress)
       .addAddress(proxyRegistry.evmAddress),
-    gas: 6_000_000
+    gas: 6_000_000,
+    maxAutomaticTokenAssociations: 1
   });
 
   return {

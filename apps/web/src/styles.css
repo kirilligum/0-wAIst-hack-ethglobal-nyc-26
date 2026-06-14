@@ -199,6 +199,28 @@ h3 {
   font-weight: 800;
 }
 
+.wallet-action {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.wallet-action a,
+.wallet-action span {
+  color: #146c5f;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.wallet-action a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+}
+
 .action-chip {
   display: inline-flex;
   align-items: center;
@@ -675,6 +697,10 @@ input {
   }
 
   .wallet-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .wallet-action {
     grid-template-columns: 1fr;
   }
 }

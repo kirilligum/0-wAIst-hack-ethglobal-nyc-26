@@ -6,6 +6,7 @@ import express, { type Express } from "express";
 import { getInfWalletDiagnostics } from "@0waist/hedera";
 import { OrderRequestSchema } from "@0waist/schemas";
 import { errorResponse } from "./errors.js";
+import { approveInfAllowanceForBuyer } from "./infAllowance.js";
 import { createLocalVerifierReceipt } from "./localVerifier.js";
 import { openOrderViaX402 } from "./orderOpening.js";
 import { listProxyOffers } from "./offers.js";
@@ -46,6 +47,16 @@ export function createApp(): Express {
   app.get("/api/inf-wallets", async (_request, response) => {
     try {
       response.json(await getInfWalletDiagnostics());
+    } catch (error) {
+      const { statusCode, body } = errorResponse(error);
+      response.status(statusCode).json(body);
+    }
+  });
+
+  app.post("/api/inf-wallets/approve-allowance", async (request, response) => {
+    try {
+      const result = await approveInfAllowanceForBuyer(request.body);
+      response.status(result.status === "blocked" ? 409 : 200).json(result);
     } catch (error) {
       const { statusCode, body } = errorResponse(error);
       response.status(statusCode).json(body);

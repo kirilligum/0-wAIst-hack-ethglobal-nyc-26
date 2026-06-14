@@ -12,6 +12,7 @@ import {
 } from "@0waist/hedera";
 import { getCheapestCompatibleOffer, listProxyOffers } from "./offers.js";
 import { createLocalVerifierReceipt } from "./localVerifier.js";
+import { approveInfAllowanceForBuyer } from "./infAllowance.js";
 import { openOrderViaX402 } from "./orderOpening.js";
 import { readPromptHistory } from "./promptHistory.js";
 import { registerSellerOffer } from "./sellerRegistration.js";
@@ -153,6 +154,17 @@ export function createProofRouterMcpServer(env: NodeJS.ProcessEnv = process.env)
     hederaActions: getHederaActionStatus(env),
     promptHistory: await readPromptHistory(env)
   })));
+
+  server.registerTool("proofrouter.approve_inf_allowance", {
+    description: "Approve a bounded buyer INF allowance for ProofEscrow.",
+    inputSchema: {
+      amountInf: z.number().positive().max(10).default(0.5),
+      amountBaseUnits: z.number().int().positive().optional(),
+      ownerAccountId: z.string().min(1).optional(),
+      confirmedOwner: z.boolean().default(false)
+    },
+    annotations: { readOnlyHint: false, openWorldHint: true }
+  }, (input) => guardedTool(async () => await approveInfAllowanceForBuyer(input, env)));
 
   server.registerTool("proofrouter.open_order_via_x402", {
     description: "Open a Hedera x402-funded order.",

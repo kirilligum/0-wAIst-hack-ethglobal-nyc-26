@@ -38,6 +38,10 @@ export const PROOFROUTER_TOOLS: ProofRouterTool[] = [
     description: "Build Router Agent context from offers, history, policy, and manifest."
   },
   {
+    name: "proofrouter.approve_inf_allowance",
+    description: "Approve a bounded buyer INF allowance for ProofEscrow."
+  },
+  {
     name: "proofrouter.open_order_via_x402",
     description: "Open a Hedera x402-funded order."
   },

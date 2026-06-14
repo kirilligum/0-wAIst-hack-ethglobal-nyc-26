@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   assertProductAssetInf,
+  buildApproveInfAllowanceTransaction,
   getInfAccountTokenStatus,
   getInfSpenderAllowance,
   getInfWalletDiagnostics,
@@ -16,6 +17,30 @@ describe("HTS INF helpers", () => {
 
   it("converts HTS token IDs to EVM addresses", () => {
     expect(tokenIdToEvmAddress("0.0.123")).toBe("0x000000000000000000000000000000000000007b");
+  });
+
+  it("builds an AccountAllowanceApproveTransaction for ProofEscrow INF spend", () => {
+    const transaction = buildApproveInfAllowanceTransaction({
+      ownerAccountId: "0.0.9186037",
+      spenderContractIdOrAddress: "0.0.9226648",
+      tokenId: "0.0.9226625",
+      amountBaseUnits: 50_000_000
+    });
+
+    expect(transaction.tokenApprovals).toHaveLength(1);
+    const approval = transaction.tokenApprovals[0];
+    expect(approval?.amount?.toNumber()).toBe(50_000_000);
+    expect(approval?.ownerAccountId?.toString()).toBe("0.0.9186037");
+    expect(approval?.spenderAccountId?.toString()).toBe("0.0.9226648");
+  });
+
+  it("requires a positive INF allowance amount", () => {
+    expect(() => buildApproveInfAllowanceTransaction({
+      ownerAccountId: "0.0.9186037",
+      spenderContractIdOrAddress: "0.0.9226648",
+      tokenId: "0.0.9226625",
+      amountBaseUnits: 0
+    })).toThrow("INF allowance amount must be a positive integer in base units");
   });
 
   it("reads INF association and balance from Mirror Node token relationships", async () => {
