@@ -10,6 +10,7 @@ Current captured state (2026-06-14):
 
 - `DYNAMIC_*`, `X402_*`, `RECLAIM_APP_ID`, `RECLAIM_APP_SECRET`, and `CLOUDFLARE_ACCOUNT_ID` are already in `.env`.
 - `RECLAIM_PROVIDER_ID`, `ZKTLS_VERIFIER_URL`, `ZKTLS_PROVIDER_POLICY_ID` remain unset.
+  - Reclaim app metadata payload (`GET /api/applications/<appId>`) currently returns `providerId: []` and `httpProviderId: []`.
 - `CRE_WORKFLOW_ID`, `CRE_DON_ID`, `CRE_GATEWAY_URL`, `CRE_TARGET`, `CRE_CHAIN_SELECTOR`, `CRE_REPORT_RECEIVER` remain unset.
 
 ## Current Credential State
@@ -133,6 +134,25 @@ ZKTLS_PROVIDER_POLICY_ID=
 
 Do not mark this complete until the CLI session can explain which Reclaim value maps to each `.env` field.
 
+### 2026-06-14 Re-attach verification run
+
+- Browser session reconnected successfully and controlled via CDP (`http://127.0.0.1:9222`).
+- Reclaim app route checked directly:
+  - `https://dev.reclaimprotocol.org/my-applications/0x6Eab35016641042044f4071787B4f9dE4935A3AD?tab=integration`
+  - `https://dev.reclaimprotocol.org/my-providers`
+- Evidence from Reclaim APIs using valid Firebase access token:
+  - `GET /api/applications/0x6Eab35016641042044f4071787B4f9dE4935A3AD` → `providerId: []`, `httpProviderId: []`
+  - `GET /api/applications/providers/0x6Eab35016641042044f4071787B4f9dE4935A3AD` → `providers: []`
+  - `GET /api/providers/user/paginated?pageKey=0&pageSize=20&searchQuery=&providerType=ALL&providerStatus=ALL&providerVisibility=ALL&sortByCreatedLatest=true` → `providers: []`
+  - `GET /api/subscription/customer/info` → `subscriptionPlan: Free Plan`, `isPaidCustomer: false`
+- UI verification:
+  - `My Providers` screen has zero user providers and shows `New Provider` + filter tabs only.
+  - No provider creation form fields were exposed in-session after `New Provider` click (no additional API routes fired besides listed above).
+  - No app provider-linking action or provider assignment endpoint was discoverable from this session.
+- `POST /api/providers/register` continues to return generic `500` on attempted payload guesses; no successful provider registration path discovered yet.
+
+- `RECLAIM_PROVIDER_ID`, `ZKTLS_VERIFIER_URL`, `ZKTLS_PROVIDER_POLICY_ID` remain unset.
+
 ## Task B: Collect Chainlink CRE Dashboard/CLI Values (pending)
 
 Use the logged-in browser session and/or the authenticated Chainlink CRE CLI.
@@ -141,6 +161,8 @@ Use the logged-in browser session and/or the authenticated Chainlink CRE CLI.
 2. Confirm whether the account has access to deploy CRE workflows.
 3. Install/authenticate the CRE CLI if needed.
 4. Create or identify the `0-wAIst` zkTLS verifier workflow target.
+
+Progress update: no active CRE dashboard/workflow tab or CLI-authenticated state was observed for this run; CRE values remain uncollectable from browser automation in the current session.
 5. Capture these values into `.env` once they exist:
 
 ```bash

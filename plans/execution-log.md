@@ -124,3 +124,29 @@ Remaining blockers:
 - Seller-node still needs real escrow lookup before serving in full P0 mode.
 - Real zkTLS verifier/provider policy remains required before settlement.
 - In-app browser control remained unavailable for visual verification; local HTTP/API checks passed.
+
+## 2026-06-14 — Reclaim/provider follow-up with authenticated session
+
+Status: blocked
+Owner: Codex
+
+Completed steps:
+
+- Reconnected to the same Chrome debug session and controlled tabs directly via Playwright over CDP.
+- Confirmed app/integration context in Reclaim for `waistminimaldemo2`:
+  - `GET /api/applications/0x6Eab35016641042044f4071787B4f9dE4935A3AD` returns `providerId: []`, `httpProviderId: []`.
+  - `GET /api/applications/providers/0x6Eab35016641042044f4071787B4f9dE4935A3AD` returns `providers: []`.
+  - `GET /api/providers/user/paginated?pageKey=0&pageSize=20&searchQuery=&providerType=ALL&providerStatus=ALL&providerVisibility=ALL&sortByCreatedLatest=true` returns `providers: []`.
+- Confirmed Reclaim subscription info:
+  - `GET /api/subscription/customer/info` → `subscriptionPlan: Free Plan`, `isPaidCustomer: false`.
+- Navigated the Reclaim UI (`my-applications`, `my-providers`, `Integration/Analytics/Logs/Reports`) and clicked `New Provider`; no provider creation flow exposed in-session.
+- Attempted generic provider registration via API (`POST /api/providers/register`) with varied payloads; responses remained `500` without actionable validation detail.
+
+Blocked credentials:
+
+- `RECLAIM_PROVIDER_ID`, `ZKTLS_VERIFIER_URL`, `ZKTLS_PROVIDER_POLICY_ID` remain uncollectable until a provider can be created/linked and mapped.
+- `CRE_*` values remain uncollectable because no CRE dashboard/workflow session was opened this run.
+
+Deviations:
+
+- Could only validate state and blockers from browser/API checks; no new credentials were added to `.env` in this run.

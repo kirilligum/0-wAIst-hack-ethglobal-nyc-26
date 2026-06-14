@@ -224,6 +224,13 @@ VERIFIER_SIGNER_PRIVATE_KEY=
 
 These were produced by `pnpm demo:deploy` and written into `.env` in the continuation session. Future sessions can rerun `pnpm demo:deploy`; it should load the existing values instead of redeploying when the env keys are present.
 
+## Credential-Run Status (2026-06-14)
+
+Latest in-session evidence:
+
+- `RECLAIM_PROVIDER_ID`, `ZKTLS_VERIFIER_URL`, `ZKTLS_PROVIDER_POLICY_ID` still missing; Reclaim app/provider state is still `providerId: []`, `httpProviderId: []` and user provider list is empty.
+- All six `CRE_*` values are still pending; no CRE dashboard session or authorized CRE CLI state was open in the active browser run.
+
 After deployment, Codex should write these into `.env`:
 
 ```bash
