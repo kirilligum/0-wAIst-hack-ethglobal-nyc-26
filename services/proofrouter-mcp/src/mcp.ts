@@ -17,6 +17,7 @@ import { readPromptHistory } from "./promptHistory.js";
 import { createRefundScheduleForOrder } from "./refundSchedule.js";
 import { registerSellerOffer } from "./sellerRegistration.js";
 import { getHederaActionStatus, PROOFROUTER_TOOLS } from "./tools.js";
+import { DEFAULT_MOCK_MODEL_ID } from "./llm.js";
 
 for (const candidate of [resolve(process.cwd(), ".env"), resolve(process.cwd(), "../../.env")]) {
   if (existsSync(candidate)) {
@@ -108,7 +109,7 @@ export function createProofRouterMcpServer(env: NodeJS.ProcessEnv = process.env)
     description: "Select the cheapest compatible active seller.",
     inputSchema: {
       budgetInf: z.number().positive(),
-      modelId: z.string().default(env.OPENAI_MODEL ?? "gpt-4.1-mini")
+      modelId: z.string().default(env.MOCK_LLM_MODEL ?? DEFAULT_MOCK_MODEL_ID)
     },
     annotations: { readOnlyHint: true, openWorldHint: false }
   }, ({ budgetInf, modelId }) => guardedTool(() => ({
@@ -195,8 +196,8 @@ export function createProofRouterMcpServer(env: NodeJS.ProcessEnv = process.env)
       sellerId: z.string().min(1),
       displayName: z.string().min(1),
       sellerEnsName: z.string().optional(),
-      modelId: z.string().min(1).default(env.OPENAI_MODEL ?? "gpt-4.1-mini"),
-      provider: z.string().min(1).default("openai-compatible"),
+      modelId: z.string().min(1).default(env.MOCK_LLM_MODEL ?? DEFAULT_MOCK_MODEL_ID),
+      provider: z.string().min(1).default("mock-local"),
       x402Endpoint: z.string().url().default("http://localhost:8790/x402"),
       hederaAccount: z.string().min(1),
       sellerEvmAddress: z.string().optional(),

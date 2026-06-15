@@ -47,8 +47,8 @@ export const EvmAddressSchema = z.string().regex(/^0x[0-9a-fA-F]{40}$/);
 export const SellerRegistrationRequestSchema = z.object({
   sellerId: SellerIdSchema.default("local-seller"),
   displayName: z.string().min(1).max(80).default("Local Seller Proxy"),
-  modelId: z.string().min(1).max(120).default("gpt-4.1-mini"),
-  provider: z.string().min(1).max(80).default("openai-compatible"),
+  modelId: z.string().min(1).max(120).default("mock-llm-v1"),
+  provider: z.string().min(1).max(80).default("mock-local"),
   inputPricePerMTokInf: z.number().nonnegative().max(100).default(0.05),
   outputPricePerMTokInf: z.number().nonnegative().max(100).default(0.12),
   fixedFeeInf: z.number().nonnegative().max(100).default(0.01),

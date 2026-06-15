@@ -1,6 +1,6 @@
 # 0-wAIst
 
-0-wAIst is an AI subscription de-re-seller router for a local-first demo environment. Buyers submit prompts, ProofRouter selects a seller, `ProofEscrow` locks `INF`, the seller proxy calls an OpenAI-compatible upstream, zkTLS proof verifies the provider response, and Hedera records hash-only audit evidence.
+0-wAIst is an AI subscription de-re-seller router for a local-first demo environment. Buyers submit prompts, ProofRouter selects a seller, `ProofEscrow` locks `INF`, the seller proxy returns a local mock OpenAI-compatible response, zkTLS proof verifies the response package, and Hedera records hash-only audit evidence.
 
 In 15 seconds:
 
@@ -16,12 +16,12 @@ The product runs from the local development environment. Chainlink CRE is the fu
 ```mermaid
 flowchart LR
     Buyer["Buyer UI<br/>Quick Buy / Router Agent"] --> Router["ProofRouter API + MCP<br/>shared order workflow"]
-    Router --> Selector["Seller selection<br/>Quick Buy: cheapest<br/>Router Agent: LLM + context"]
+    Router --> Selector["Seller selection<br/>Quick Buy: cheapest<br/>Router Agent: mock context policy"]
     Selector --> Registry["ProxyRegistry<br/>seller offers + prices"]
     Router --> Escrow["ProofEscrow<br/>locks HTS INF"]
     Escrow --> Refund["Hedera scheduled refund<br/>refundExpired(orderId)"]
-    Router --> Seller["Seller Node<br/>/x402 + OpenAI-compatible proxy"]
-    Seller --> Upstream["OpenAI / LiteLLM<br/>seller subscription"]
+    Router --> Seller["Seller Node<br/>/x402 + OpenAI-compatible mock"]
+    Seller --> Upstream["Local mock response<br/>no provider key"]
     Seller --> Proof["Local zkTLS verifier<br/>Reclaim-compatible proof policy"]
     Proof --> Settlement["Verified receipt<br/>seller settlement + buyer refund"]
     Settlement --> Escrow
@@ -44,7 +44,7 @@ sequenceDiagram
     participant Registry as ProxyRegistry
     participant Escrow as ProofEscrow
     participant Seller as Seller Node
-    participant LLM as Seller LLM Upstream
+    participant LLM as Seller Mock Response
     participant ZK as zkTLS Verifier
     participant Audit as HCS / HashScan
 
@@ -54,13 +54,13 @@ sequenceDiagram
     alt Quick Buy
         Router->>Router: Select cheapest compatible seller
     else Router Agent
-        Router->>Router: Use LLM + seller history + manifest context
+        Router->>Router: Use mock policy + seller history + manifest context
     end
     Router->>Escrow: Open order and lock HTS INF
     Router->>Escrow: Schedule refundExpired(orderId)
     Router->>Seller: Call /x402 with escrow evidence
-    Seller->>LLM: Run seller-owned OpenAI-compatible call
-    LLM-->>Seller: Response + usage
+    Seller->>LLM: Build local OpenAI-compatible mock
+    LLM-->>Seller: Response + mock usage
     Seller->>ZK: Produce provider-response proof
     ZK-->>Router: Verified proof receipt
     Router->>Escrow: Settle seller payment and refund unused INF
@@ -72,7 +72,7 @@ sequenceDiagram
 
 - `apps/web`: Vite React UI for buyers, sellers, wallet state, order execution, and audit links.
 - `services/proofrouter-mcp`: ProofRouter API, MCP server, seller selection, escrow orchestration, proof submission, settlement, and audit writing.
-- `services/seller-node`: Seller endpoint with `/x402` and OpenAI-compatible `/v1/chat/completions`.
+- `services/seller-node`: Seller endpoint with `/x402` and local mock OpenAI-compatible `/v1/chat/completions`.
 - `packages/schemas`: Shared request, response, offer, route, audit, and tool schemas.
 - `packages/crypto`: Hashing, prompt redaction, local encryption, and trace-safe serialization helpers.
 - `packages/hedera`: Hedera HCS/HFS/HTS/EVM helpers, escrow transaction builders, scheduled refunds, settlement batches, and verifier receipts.
@@ -86,7 +86,6 @@ Requirements:
 - Node.js 22
 - pnpm 10
 - Hedera Testnet account
-- OpenAI API key or LiteLLM/OpenAI-compatible seller upstream
 - Local zkTLS verifier endpoint and provider policy
 
 Install dependencies and create a local environment file:
@@ -99,8 +98,7 @@ cp .env.example .env
 Core `.env` fields:
 
 ```dotenv
-OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4.1-mini
+MOCK_LLM_MODEL=mock-llm-v1
 
 HEDERA_NETWORK=testnet
 HEDERA_OPERATOR_ID=
@@ -196,15 +194,15 @@ After seller selection, both modes use the same path:
 
 ## Seller Flow
 
-A seller is anyone with access to an OpenAI-compatible model endpoint who wants to resell calls through the 0-wAIst marketplace.
+A seller is represented by a local mock OpenAI-compatible endpoint in the post-hackathon demo. The API shape is preserved for escrow/proof testing, but no OpenAI, LiteLLM, or external LLM provider key is used.
 
 Seller responsibilities:
 
-1. Run an OpenAI-compatible upstream such as LiteLLM, or use OpenAI directly.
-2. Run `seller-node`, which exposes `/x402` and `/v1/chat/completions`.
+1. Run `seller-node`, which exposes `/x402` and `/v1/chat/completions`.
+2. Return local mock completions only after escrow evidence is present.
 3. Publish a seller offer with endpoint, model, prices, budget limits, and Hedera account.
 4. Serve requests only when escrow evidence includes order id, request hash, `ProofEscrow` target, network, and `INF`.
-5. Produce proof material that binds the upstream response to the settled order.
+5. Produce proof material that binds the mock response to the settled order.
 
 Seller `.env` fields:
 
@@ -214,8 +212,8 @@ SELLER_DISPLAY_NAME=Local Seller Proxy
 SELLER_HEDERA_ACCOUNT=
 SELLER_EVM_ADDRESS=
 SELLER_X402_ENDPOINT=http://localhost:8790/x402
-SELLER_MODEL=gpt-4.1-mini
-SELLER_PROVIDER=openai-compatible
+SELLER_MODEL=mock-llm-v1
+SELLER_PROVIDER=mock-local
 SELLER_INPUT_PRICE_PER_MTOK_INF=0.05
 SELLER_OUTPUT_PRICE_PER_MTOK_INF=0.12
 SELLER_FIXED_FEE_INF=0.01
@@ -224,12 +222,6 @@ SELLER_MAX_INPUT_TOKENS=32000
 SELLER_MAX_OUTPUT_TOKENS=4000
 SELLER_PUBLISH_ON_CHAIN=true
 SELLER_PORT=8790
-
-# Choose one upstream path:
-OPENAI_API_KEY=
-# or
-LITELLM_BASE_URL=http://localhost:4000
-LITELLM_API_KEY=
 ```
 
 Run and publish:

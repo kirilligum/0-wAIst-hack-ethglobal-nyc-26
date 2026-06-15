@@ -96,8 +96,8 @@ export default function App({ dynamicConfigured }: AppProps) {
   const [sellerForm, setSellerForm] = useState({
     sellerId: "local-seller",
     displayName: "Local Seller Proxy",
-    modelId: "gpt-4.1-mini",
-    provider: "openai-compatible",
+    modelId: "mock-llm-v1",
+    provider: "mock-local",
     inputPricePerMTokInf: 0.05,
     outputPricePerMTokInf: 0.12,
     fixedFeeInf: 0.01,

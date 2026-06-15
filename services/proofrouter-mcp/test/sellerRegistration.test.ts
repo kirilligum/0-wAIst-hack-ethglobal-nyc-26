@@ -13,8 +13,8 @@ describe("seller registration", () => {
       sellerId: "local-dev",
       displayName: "Local Dev Seller",
       sellerEnsName: "Local-Dev.ETH",
-      modelId: "gpt-4.1-mini",
-      provider: "openai-compatible",
+      modelId: "mock-llm-v1",
+      provider: "mock-local",
       x402Endpoint: "http://localhost:8790/x402",
       hederaAccount: "0.0.9186037",
       fixedFeeInf: 0.005,
@@ -36,8 +36,8 @@ describe("seller registration", () => {
     const result = await registerSellerOffer({
       sellerId: "needs-address",
       displayName: "Needs Address",
-      modelId: "gpt-4.1-mini",
-      provider: "openai-compatible",
+      modelId: "mock-llm-v1",
+      provider: "mock-local",
       x402Endpoint: "http://localhost:8790/x402",
       hederaAccount: "0.0.9186037",
       publishOnChain: true

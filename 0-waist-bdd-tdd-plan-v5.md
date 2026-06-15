@@ -307,7 +307,7 @@ M9: UI, dashboard, README, demo readiness
 | M2 | Partial complete | Hedera SDK HCS/HFS/HTS helpers exist. Live HCS topic `0.0.9226268`, HFS manifest `0.0.9226269`, HTS `INF` token `0.0.9226625`, and refreshed manifest transaction `0.0.9186037@1781389738.626703938` are visible on Hedera Testnet. Buyer/seller wallet association and funding remain blocked by wallet credentials. |
 | M3 | Partial complete | ProofRouter HTTP service, tool registry, and official MCP stdio server exist. MCP client smoke coverage lists and calls tools over the protocol. `proofrouter.publish_seller_offer` uses the shared seller registration handler. `proofrouter.submit_proof_to_cre` now signs a local verifier placeholder receipt when CRE is unavailable, and remains labeled as placeholder evidence. |
 | M4 | Partial complete | Dynamic/x402 credentials are present and readiness passes. Hedera SDK helper now ABI-encodes/builds/submits `ProofEscrow.openOrder`, and ProofRouter HTTP/MCP can prepare the exact x402 escrow transaction. Read-only Mirror Node diagnostics report buyer/seller INF association, buyer INF balance, and ProofEscrow INF allowance. A guarded allowance approval helper/API/MCP/UI action exists. Live buyer-wallet `openOrder` succeeded for registry offer `1` and escrow order `1`; Dynamic/x402 facilitator wrapping remains open. |
-| M5 | Partial complete | Seller-node service exists and gates `/v1/chat/completions` behind structured escrow evidence headers that include order id, request hash, ProofEscrow target, network, and INF asset. It accepted funded order `1` evidence and completed a real OpenAI-compatible seller proxy call. Local verifier EVM signer is generated in ignored `.env` and approved in the live `VerifierRegistry`. Chainlink CRE deploy access is requested but not enabled, no workflow exists, Reclaim has no provider, and trusted CRE/real zkTLS remains blocked. |
+| M5 | Partial complete | Seller-node service exists and gates `/v1/chat/completions` behind structured escrow evidence headers that include order id, request hash, ProofEscrow target, network, and INF asset. Post-hackathon, it returns a local mock seller response and does not call an external LLM provider. Local verifier EVM signer is generated in ignored `.env` and approved in the live `VerifierRegistry`. Chainlink CRE deploy access is requested but not enabled, no workflow exists, Reclaim has no provider, and trusted CRE/real zkTLS remains blocked. |
 | M6 | Partial complete | SDK helper builds and submits a Hedera Scheduled Transaction targeting `ProofEscrow.refundExpired(orderId)`. Live schedule creation is proven for funded escrow order `1`: schedule `0.0.9229938`, tx `0.0.9186037@1781421835.290442554`. Scheduled execution after expiry remains open. |
 | M7 | Partial complete | SDK helper ABI-encodes `ProofEscrow.settle`, builds a native Hedera `BatchTransaction` with an HCS receipt message, and exposes readiness in the API/UI for the placeholder demo path. Current CRE discovery says Hedera direct workflow support is false, so trusted live settlement is deferred to the Sepolia CRE settlement plus Hedera audit plan. |
 | M8 | Partial complete | Encrypted prompt-history summaries and Router Agent LLM decision path exist. |
@@ -323,7 +323,7 @@ pnpm demo:deploy PASS with live HTS INF and contract deployments
 pnpm demo:verifier PASS with live VerifierRegistry approval as legacy demo scaffolding; not trusted P0 completion evidence
 pnpm demo:seed  PASS with real Hedera Testnet HCS activity and HFS manifest refresh
 pnpm demo:seller PASS with live ProxyRegistry seller offer transaction 0.0.9186037@1781396121.704889572
-pnpm demo:judge PASS with real OpenAI call and Hedera HCS audit
+pnpm demo:judge PASS with local mock LLM response and Hedera HCS audit
 pnpm demo:health PASS for placeholder demo path, with trustedCreReady=false and verification.mode=local-verifier-placeholder
 curl /api/hedera-actions PASS locally; seller registry publication ready; x402 order readiness true; proof/settlement readiness uses local verifier placeholder while CRE is blocked
 MCP stdio smoke PASS; client lists and calls `proofrouter.list_proxy_offers`
@@ -334,7 +334,7 @@ live ProofEscrow redeploy PASS: 0.0.9186037@1781417653.202690422 -> ProofEscrow 
 live INF allowance PASS: 0.0.9186037@1781417880.417636264
 live ProofEscrow.openOrder PASS: orderId 1, tx 0.0.9186037@1781417935.795490344
 live scheduled refund creation PASS: schedule 0.0.9229938, tx 0.0.9186037@1781421835.290442554
-live seller proxy with escrow evidence PASS: OpenAI chat completion chatcmpl-DqYWvhQgAbv8vspyelR9yJt8czZPc
+live seller proxy with escrow evidence PASS: historical external-provider completion before post-hackathon mock cleanup
 ```
 
 Temporary exception: Chainlink CRE deploy access is requested but not enabled. No CRE workflow exists, no Sepolia receiver/target exists, Reclaim has no provider, and Hedera is not directly listed as a CRE-supported workflow chain. The current executable proof path uses a real approved local verifier signer and `ProofEscrow`-compatible receipt signatures. This is acceptable for continued demo implementation, but it is not trusted CRE completion evidence. Later trusted CRE work should follow `plans/sepolia-cre-settlement-hedera-audit-plan.md`.
@@ -793,7 +793,7 @@ Status:
 - [x] `services/seller-node` package added with `/health`, `/x402`, and `/v1/chat/completions`.
 - [x] Missing payment/escrow evidence returns HTTP 402 with Hedera `INF` x402 challenge details.
 - [x] Seller proxy now rejects a bare order id and requires structured escrow evidence headers for order id, request hash, ProofEscrow target, network, and `INF`.
-- [x] LiteLLM-compatible upstream path uses `LITELLM_BASE_URL`/`LITELLM_API_KEY`; OpenAI direct path is available when seller uses `OPENAI_API_KEY`.
+- [x] Post-hackathon seller-node path returns local mock OpenAI-compatible responses after escrow evidence; no external LLM provider key is used.
 - [x] Seller publication path added to API, MCP, frontend, and `pnpm demo:seller`.
 - [x] Seller Sepolia ENS alias metadata and live ENS app profile link added to shared offers, seller onboarding, MCP publication, demo env, UI, and HFS market manifest payloads; demo seller is `0waist.eth` at `https://app.ens.dev/p/0waist.eth`; buyer ENS is intentionally out of scope.
 - [x] Live `ProxyRegistry.publishOffer` transaction succeeded for `registryOfferId=1`.

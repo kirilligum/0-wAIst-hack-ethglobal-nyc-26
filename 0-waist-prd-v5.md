@@ -15,6 +15,8 @@
 
 Current branch: `codex/full-p0-continuation`
 
+Post-hackathon cleanup, 2026-06-15: live external LLM provider calls are disabled. The demo now uses `mock-llm-v1` local responses and does not require provider API keys.
+
 ### Built
 
 - [x] pnpm workspace skeleton with TypeScript packages, service, Vite frontend, demo scripts, and static forbidden-pattern check.
@@ -26,10 +28,10 @@ Current branch: `codex/full-p0-continuation`
 - [x] Dynamic registered-offer marketplace cache, shared by API, MCP, demo script, and frontend.
 - [x] Live seller offer publication through `ProxyRegistry.publishOffer`; registry offer `1`, transaction `0.0.9186037@1781396121.704889572`.
 - [x] Seller onboarding frontend panel for local-save or Hedera publish, with pricing, endpoint, account, and HashScan result state.
-- [x] Seller-node service exposing `/health`, `/x402`, and OpenAI-compatible `/v1/chat/completions` guarded by structured escrow evidence headers.
+- [x] Seller-node service exposing `/health`, `/x402`, and mock OpenAI-compatible `/v1/chat/completions` guarded by structured escrow evidence headers.
 - [x] Quick Buy deterministic cheapest compatible seller selection.
-- [x] Router Agent selection through a real OpenAI LLM call when `mode=router-agent`.
-- [x] Real OpenAI Responses API answer generation from the server.
+- [x] Router Agent selection through the local mock context policy when `mode=router-agent`.
+- [x] Server-side mock answer generation with no external LLM provider call.
 - [x] Hedera SDK helpers for HCS audit topic creation, hash-only HCS message submission, HFS manifest creation/read, and HashScan links.
 - [x] Live Hedera Testnet HCS topic `0.0.9226268`.
 - [x] Live Hedera Testnet HFS market manifest `0.0.9226269`.
@@ -48,7 +50,7 @@ Current branch: `codex/full-p0-continuation`
 - [x] Hedera SDK helper to ABI-encode, build, and submit `ProofEscrow.openOrder(offerId, promptHash, requestHash, deadline)`.
 - [x] ProofRouter HTTP/MCP path prepares `ProofEscrow.openOrder` calldata and blocks live submission until the configured signer is confirmed as the buyer wallet.
 - [x] Live `ProofEscrow.openOrder` succeeded for registry offer `1`, escrow order `1`, transaction `0.0.9186037@1781417935.795490344`.
-- [x] Seller-node accepted the funded escrow evidence and completed a real OpenAI-compatible seller proxy call.
+- [x] Seller-node accepted the funded escrow evidence and completed a local mock seller proxy response.
 - [x] Hedera SDK helper to create a scheduled transaction targeting `ProofEscrow.refundExpired(orderId)`.
 - [x] Live Hedera Scheduled Transaction created for funded escrow order `1`: schedule `0.0.9229938`, transaction `0.0.9186037@1781421835.290442554`.
 - [x] Hedera SDK helper to build/submit a native batch containing `ProofEscrow.settle` and a hash-only HCS receipt message.
@@ -61,7 +63,7 @@ Current branch: `codex/full-p0-continuation`
 - [x] `pnpm build` passes.
 - [x] `pnpm test` passes.
 - [x] `pnpm test:e2e` passes.
-- [x] Real OpenAI smoke ran through `pnpm demo:judge`.
+- [x] Mock LLM smoke ran through `pnpm demo:judge`.
 - [x] `pnpm demo:seed` creates visible Hedera Testnet HCS activity.
 - [x] `pnpm demo:seller` publishes a live seller offer to `ProxyRegistry` and stores the local marketplace cache.
 - [x] `pnpm demo:deploy` creates/loads HTS `INF` and deploys the three Hedera EVM contracts.
@@ -73,7 +75,7 @@ Current branch: `codex/full-p0-continuation`
 - [x] Frontend running locally at `http://localhost:5173`.
 - [x] API running locally at `http://localhost:8787`.
 - [x] Seller node running locally at `http://localhost:8790`.
-- [x] Real OpenAI call path working.
+- [x] Local mock LLM path working without provider keys.
 - [x] Real Hedera Testnet scanner activity working.
 - [x] Real seller registry activity working.
 - [x] Real scheduled refund transaction creation visible on HashScan: `https://hashscan.io/testnet/transaction/0.0.9186037%401781421835.290442554`.

@@ -32,7 +32,7 @@ Current captured state (2026-06-14):
 Present in `.env` by key-presence check:
 
 ```text
-OPENAI_API_KEY
+MOCK_LLM_MODEL
 HEDERA_OPERATOR_ID
 HEDERA_OPERATOR_KEY
 HCS_AUDIT_TOPIC_ID
@@ -92,7 +92,7 @@ These are not blocked by the missing values above:
 ```text
 frontend polish and UI wiring
 seller onboarding UX and seller registry publication
-local seller-node/LiteLLM/OpenAI-compatible proxy work
+local seller-node mock OpenAI-compatible proxy work
 MCP server/tool schema work
 Router Agent context and prompt-history work
 Hedera HCS/HFS/HTS helper work

@@ -5,7 +5,7 @@ const request = {
   orderId: 4,
   requestHash: "a".repeat(64),
   responseHash: "b".repeat(64),
-  modelId: "gpt-4.1-mini",
+  modelId: "mock-llm-v1",
   inputTokens: 100,
   outputTokens: 50,
   proofEscrowContractIdOrAddress: "0.0.9226648",

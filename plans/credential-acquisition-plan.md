@@ -32,7 +32,7 @@ Tasks for the separate browser/login session:
 These are already present locally and should stay in `.env`:
 
 ```bash
-OPENAI_API_KEY=...
+MOCK_LLM_MODEL=mock-llm-v1
 HEDERA_NETWORK=testnet
 HEDERA_OPERATOR_ID=...
 HEDERA_OPERATOR_KEY=...
@@ -265,7 +265,7 @@ HTS_INF_TOKEN_EVM_ADDRESS=
 Before returning to the implementation session, make sure `.env` contains:
 
 ```bash
-OPENAI_API_KEY=
+MOCK_LLM_MODEL=mock-llm-v1
 HEDERA_NETWORK=testnet
 HEDERA_OPERATOR_ID=
 HEDERA_OPERATOR_KEY=

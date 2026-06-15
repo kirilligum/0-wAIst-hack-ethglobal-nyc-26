@@ -13,14 +13,14 @@ describe("ProxyRegistry helpers", () => {
   });
 
   it("hashes registry labels to fixed bytes32 values", () => {
-    expect(textToBytes32("gpt-4.1-mini")).toHaveLength(32);
+    expect(textToBytes32("mock-llm-v1")).toHaveLength(32);
   });
 
   it("encodes the publishOffer contract call", () => {
     const encoded = encodePublishOfferFunctionData({
       sellerEvmAddress: "0x726a206d0b66730454e175a34bcf9f9fbc086458",
-      provider: "openai-compatible",
-      modelId: "gpt-4.1-mini",
+      provider: "mock-local",
+      modelId: "mock-llm-v1",
       endpoint: "http://localhost:8790/x402",
       inputPricePerMTokInf: 0.05,
       outputPricePerMTokInf: 0.12,

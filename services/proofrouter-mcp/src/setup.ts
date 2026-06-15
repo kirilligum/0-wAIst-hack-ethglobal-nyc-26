@@ -8,6 +8,7 @@ import {
 } from "@0waist/hedera";
 import { SEEDED_OFFERS } from "./offers.js";
 import { updateEnvFile } from "./envFile.js";
+import { DEFAULT_MOCK_MODEL_ID } from "./llm.js";
 
 export const HederaSetupRequestSchema = z.object({
   operatorId: z.string().regex(/^0\.0\.\d+$/),
@@ -86,7 +87,7 @@ export async function saveAndSeedHedera(input: HederaSetupRequest) {
   const demoPromptHash = promptHash("local setup seed");
   const demoRequestHash = requestHash({
     promptHash: demoPromptHash,
-    offerId: "offer-alpha-gpt41mini",
+    offerId: "offer-alpha-mockllm",
     mode: "quick-buy",
     createdAt
   });
@@ -97,7 +98,7 @@ export async function saveAndSeedHedera(input: HederaSetupRequest) {
     requestHash: demoRequestHash,
     responseHash: sha256Hex("0waist.setup.seed.response"),
     sellerId: "alpha",
-    modelId: process.env.OPENAI_MODEL ?? "gpt-4.1-mini",
+    modelId: process.env.MOCK_LLM_MODEL ?? DEFAULT_MOCK_MODEL_ID,
     createdAt,
     schemaVersion: "0waist.audit.v1"
   });

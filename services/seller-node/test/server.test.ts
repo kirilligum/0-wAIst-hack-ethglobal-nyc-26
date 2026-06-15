@@ -15,7 +15,7 @@ function listen(app: ReturnType<typeof createSellerApp>) {
 }
 
 describe("seller node", () => {
-  it("reports blocked readiness until seller upstream credentials exist", () => {
+  it("reports mock upstream readiness without seller provider credentials", () => {
     const readiness = createSellerReadiness({
       PROOF_ESCROW_CONTRACT_ID: "0.0.1",
       PROXY_REGISTRY_CONTRACT_ID: "0.0.2",
@@ -23,8 +23,9 @@ describe("seller node", () => {
       X402_PAYMENT_ASSET: "INF"
     });
 
-    expect(readiness.status).toBe("blocked");
-    expect(readiness.upstream.missing).toContain("LITELLM_BASE_URL or OPENAI_API_KEY");
+    expect(readiness.status).toBe("ready");
+    expect(readiness.upstream.provider).toBe("mock");
+    expect(readiness.upstream.missing).toEqual([]);
   });
 
   it("builds a Hedera INF x402 challenge", () => {
@@ -70,33 +71,12 @@ describe("seller node", () => {
     }
   });
 
-  it("returns 402 before forwarding and forwards with complete escrow evidence", async () => {
-    const app = createSellerApp(
-      {
-        OPENAI_API_KEY: "test-key",
-        OPENAI_MODEL: "gpt-4.1-mini",
-        X402_PAYMENT_ASSET: "INF",
-        PROOF_ESCROW_CONTRACT_ID: "0.0.9226648"
-      },
-      {
-        async fetchImpl() {
-          return new Response(JSON.stringify({
-            id: "chatcmpl-test",
-            choices: [
-              {
-                message: {
-                  role: "assistant",
-                  content: "seller response"
-                }
-              }
-            ]
-          }), {
-            status: 200,
-            headers: { "content-type": "application/json" }
-          });
-        }
-      }
-    );
+  it("returns 402 before completion and returns a mock completion with complete escrow evidence", async () => {
+    const app = createSellerApp({
+      SELLER_MODEL: "mock-llm-v1",
+      X402_PAYMENT_ASSET: "INF",
+      PROOF_ESCROW_CONTRACT_ID: "0.0.9226648"
+    });
     const server = await listen(app);
     try {
       const unpaid = await fetch(`${server.url}/v1/chat/completions`, {
@@ -130,7 +110,17 @@ describe("seller node", () => {
         body: JSON.stringify({ messages: [{ role: "user", content: "hi" }] })
       });
       expect(paid.status).toBe(200);
-      expect(await paid.json()).toMatchObject({ id: "chatcmpl-test" });
+      expect(await paid.json()).toMatchObject({
+        id: expect.stringMatching(/^chatcmpl-mock-/),
+        model: "mock-llm-v1",
+        choices: [
+          {
+            message: {
+              content: expect.stringContaining("No OpenAI, LiteLLM, or external LLM provider was called.")
+            }
+          }
+        ]
+      });
     } finally {
       await server.close();
     }

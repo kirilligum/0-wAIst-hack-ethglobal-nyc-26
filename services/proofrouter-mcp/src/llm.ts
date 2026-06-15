@@ -1,6 +1,7 @@
-import OpenAI from "openai";
+import { createHash } from "node:crypto";
 import { Offer, RouteDecision } from "@0waist/schemas";
-import { CredentialBlocker } from "./errors.js";
+
+export const DEFAULT_MOCK_MODEL_ID = "mock-llm-v1";
 
 export interface LlmGateway {
   answerPrompt(input: { prompt: string; modelId: string }): Promise<string>;
@@ -12,88 +13,57 @@ export interface LlmGateway {
   }): Promise<Pick<RouteDecision, "selectedSellerId" | "reason" | "rejectedAlternatives">>;
 }
 
-export function createOpenAiGateway(env: NodeJS.ProcessEnv = process.env): LlmGateway {
-  const apiKey = env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new CredentialBlocker(
-      "OPENAI_API_KEY is required for real LLM calls.",
-      ["OPENAI_API_KEY"],
-      "openai"
-    );
+function promptFingerprint(prompt: string): string {
+  return createHash("sha256")
+    .update(`0waist.mock.prompt:${prompt}`)
+    .digest("hex")
+    .slice(0, 12);
+}
+
+function pickMockRouterOffer(input: {
+  budgetInf: number;
+  offers: Offer[];
+}): Offer {
+  const activeOffers = input.offers.filter((offer) => offer.active);
+  const affordableOffers = activeOffers.filter((offer) => offer.fixedFeeInf <= input.budgetInf);
+  const candidates = affordableOffers.length > 0 ? affordableOffers : activeOffers;
+  const selected = candidates.find((offer) => offer.summary.toLowerCase().includes("privacy"))
+    ?? candidates[0];
+  if (!selected) {
+    throw new Error("No active seller offer is available for mock routing");
   }
+  return selected;
+}
 
-  const client = new OpenAI({ apiKey });
-  const defaultModel = env.OPENAI_MODEL ?? "gpt-4.1-mini";
-
+export function createMockLlmGateway(env: NodeJS.ProcessEnv = process.env): LlmGateway {
   return {
     async answerPrompt({ prompt, modelId }) {
-      const response = await client.responses.create({
-        model: modelId || defaultModel,
-        input: [
-          {
-            role: "system",
-            content: "Answer the user's request concisely. Do not mention internal routing, payment, or audit machinery."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ]
-      });
-
-      const text = response.output_text?.trim();
-      if (!text) {
-        throw new Error("OpenAI returned an empty response");
-      }
-      return text;
+      const resolvedModel = modelId || env.MOCK_LLM_MODEL || DEFAULT_MOCK_MODEL_ID;
+      return [
+        `Mock response generated locally with ${resolvedModel}.`,
+        "No OpenAI, LiteLLM, or external LLM provider was called.",
+        `Request fingerprint: ${promptFingerprint(prompt)}.`
+      ].join(" ");
     },
 
     async decideRoute({ prompt, budgetInf, offers, promptHistorySummaries }) {
-      const response = await client.chat.completions.create({
-        model: defaultModel,
-        response_format: { type: "json_object" },
-        messages: [
-          {
-            role: "system",
-            content: [
-              "You are the 0-wAIst Router Agent.",
-              "Choose exactly one active seller from the provided offers.",
-              "Use context and plain reasoning only; do not calculate route scores or weighted formulas.",
-              "Return JSON with selectedSellerId, reason, and rejectedAlternatives."
-            ].join(" ")
-          },
-          {
-            role: "user",
-            content: JSON.stringify({
-              prompt,
-              budgetInf,
-              offers: offers.map((offer) => ({
-                sellerId: offer.sellerId,
-                offerId: offer.offerId,
-                modelId: offer.modelId,
-                fixedFeeInf: offer.fixedFeeInf,
-                maxBudgetInf: offer.maxBudgetInf,
-                summary: offer.summary
-              })),
-              promptHistorySummaries
-            })
-          }
-        ]
-      });
-
-      const content = response.choices[0]?.message.content;
-      if (!content) {
-        throw new Error("OpenAI did not return a route decision");
-      }
-
-      const parsed = JSON.parse(content) as Pick<
-        RouteDecision,
-        "selectedSellerId" | "reason" | "rejectedAlternatives"
-      >;
-      if (!parsed.selectedSellerId || !parsed.reason || !Array.isArray(parsed.rejectedAlternatives)) {
-        throw new Error("OpenAI route decision did not match the expected JSON shape");
-      }
-      return parsed;
+      const selected = pickMockRouterOffer({ budgetInf, offers });
+      return {
+        selectedSellerId: selected.sellerId,
+        reason: [
+          `Mock Router Agent selected ${selected.displayName} from the local offer context.`,
+          `No external LLM provider was called for prompt ${promptFingerprint(prompt)}.`,
+          `Prompt-history summaries considered: ${promptHistorySummaries.length}.`
+        ].join(" "),
+        rejectedAlternatives: offers
+          .filter((offer) => offer.offerId !== selected.offerId)
+          .map((offer) => ({
+            sellerId: offer.sellerId,
+            reason: offer.active && offer.fixedFeeInf <= budgetInf
+              ? "Not selected by the post-hackathon mock Router Agent policy."
+              : "Not active or outside the buyer budget for this mock route."
+          }))
+      };
     }
   };
 }

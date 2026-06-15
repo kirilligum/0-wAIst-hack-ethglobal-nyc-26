@@ -64,6 +64,6 @@ describe("executeInferenceOrder", () => {
 
     expect(result.selectedOffer.sellerId).toBe("gamma");
     expect(result.hederaAudit.status).toBe("submitted");
-    expect(result.timeline.some((item) => item.label === "OpenAI call")).toBe(true);
+    expect(result.timeline.some((item) => item.label === "Mock LLM response")).toBe(true);
   });
 });

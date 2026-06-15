@@ -18,8 +18,8 @@ async function main() {
   const result = await registerSellerOffer({
     sellerId: process.env.SELLER_ID ?? "local-seller",
     displayName: process.env.SELLER_DISPLAY_NAME ?? "Local Seller Proxy",
-    modelId: process.env.SELLER_MODEL ?? process.env.OPENAI_MODEL ?? "gpt-4.1-mini",
-    provider: process.env.SELLER_PROVIDER ?? "openai-compatible",
+    modelId: process.env.SELLER_MODEL ?? process.env.MOCK_LLM_MODEL ?? "mock-llm-v1",
+    provider: process.env.SELLER_PROVIDER ?? "mock-local",
     inputPricePerMTokInf: numberFromEnv("SELLER_INPUT_PRICE_PER_MTOK_INF", 0.05),
     outputPricePerMTokInf: numberFromEnv("SELLER_OUTPUT_PRICE_PER_MTOK_INF", 0.12),
     fixedFeeInf: numberFromEnv("SELLER_FIXED_FEE_INF", 0.01),

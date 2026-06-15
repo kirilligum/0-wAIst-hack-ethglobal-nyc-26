@@ -7,11 +7,11 @@ import { demoSellerEnsName } from "./ens.js";
 
 export const SEEDED_OFFERS: Offer[] = OfferListSchema.parse([
   {
-    offerId: "offer-alpha-gpt41mini",
+    offerId: "offer-alpha-mockllm",
     sellerId: "alpha",
     displayName: "Alpha Proxy",
-    modelId: "gpt-4.1-mini",
-    provider: "openai",
+    modelId: "mock-llm-v1",
+    provider: "mock-local",
     inputPricePerMTokInf: 0.05,
     outputPricePerMTokInf: 0.12,
     fixedFeeInf: 0.01,
@@ -24,11 +24,11 @@ export const SEEDED_OFFERS: Offer[] = OfferListSchema.parse([
     registryStatus: "seeded"
   },
   {
-    offerId: "offer-beta-gpt41mini",
+    offerId: "offer-beta-mockllm",
     sellerId: "beta",
     displayName: "Beta Proxy",
-    modelId: "gpt-4.1-mini",
-    provider: "openai",
+    modelId: "mock-llm-v1",
+    provider: "mock-local",
     inputPricePerMTokInf: 0.07,
     outputPricePerMTokInf: 0.14,
     fixedFeeInf: 0.012,
@@ -41,11 +41,11 @@ export const SEEDED_OFFERS: Offer[] = OfferListSchema.parse([
     registryStatus: "seeded"
   },
   {
-    offerId: "offer-gamma-gpt41mini",
+    offerId: "offer-gamma-mockllm",
     sellerId: "gamma",
     displayName: "Gamma Proxy",
-    modelId: "gpt-4.1-mini",
-    provider: "openai",
+    modelId: "mock-llm-v1",
+    provider: "mock-local",
     inputPricePerMTokInf: 0.09,
     outputPricePerMTokInf: 0.18,
     fixedFeeInf: 0.02,

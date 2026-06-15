@@ -10,7 +10,6 @@ import {
 } from "@0waist/hedera";
 
 const MINIMAL_DEMO_ENV = [
-  "OPENAI_API_KEY",
   "HEDERA_OPERATOR_ID",
   "HEDERA_OPERATOR_KEY",
   "HCS_AUDIT_TOPIC_ID"
@@ -98,7 +97,12 @@ const result = {
     ready: minimalMissing.length === 0 && pathOk,
     missing: minimalMissing,
     pathOk,
-    hederaMissing
+    hederaMissing,
+    llm: {
+      mode: "mock-local",
+      modelId: process.env.MOCK_LLM_MODEL ?? "mock-llm-v1",
+      externalProviderKeysRequired: false
+    }
   },
   fullP0: {
     ready: fullReady,
@@ -112,7 +116,7 @@ const result = {
     agentKit
   },
   message: minimalMissing.length > 0
-    ? "Minimal demo is blocked until OpenAI and Hedera HCS credentials are configured."
+    ? "Minimal demo is blocked until Hedera HCS credentials are configured; LLM output is local mock mode and requires no provider key."
     : fullMissing.length > 0 || !agentKit.ready
       ? "Minimal demo credentials are present, but full P0 is still blocked by locked integrations or placeholder-only verification."
       : placeholderOnly

@@ -67,7 +67,7 @@ async function main() {
   const demoPromptHash = promptHash("demo seed");
   const demoRequestHash = requestHash({
     promptHash: demoPromptHash,
-    offerId: "offer-alpha-gpt41mini",
+    offerId: "offer-alpha-mockllm",
     mode: "quick-buy",
     createdAt
   });
@@ -78,7 +78,7 @@ async function main() {
     requestHash: demoRequestHash,
     responseHash: sha256Hex("0waist.seed.response"),
     sellerId: "alpha",
-    modelId: process.env.OPENAI_MODEL ?? "gpt-4.1-mini",
+    modelId: process.env.MOCK_LLM_MODEL ?? "mock-llm-v1",
     createdAt,
     schemaVersion: "0waist.audit.v1"
   });

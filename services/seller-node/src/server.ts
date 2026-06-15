@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -34,7 +35,7 @@ export interface SellerReadiness {
   status: "ready" | "blocked";
   upstream: {
     ready: boolean;
-    provider: "litellm" | "openai" | "missing";
+    provider: "mock";
     baseUrl?: string;
     missing: string[];
   };
@@ -67,13 +68,6 @@ export interface X402Challenge {
 }
 
 export function createSellerReadiness(env: NodeJS.ProcessEnv = process.env): SellerReadiness {
-  const hasLiteLlm = Boolean(env.LITELLM_BASE_URL);
-  const hasLiteLlmKey = Boolean(env.LITELLM_API_KEY);
-  const hasOpenAi = Boolean(env.OPENAI_API_KEY);
-  const upstreamMissing = hasLiteLlm
-    ? (hasLiteLlmKey ? [] : ["LITELLM_API_KEY"])
-    : (hasOpenAi ? [] : ["LITELLM_BASE_URL or OPENAI_API_KEY"]);
-  const provider = hasLiteLlm ? "litellm" : (hasOpenAi ? "openai" : "missing");
   const payment = x402Readiness(env);
   const escrowMissing = [
     ...(env.PROOF_ESCROW_CONTRACT_ID || env.PROOF_ESCROW_ADDRESS ? [] : ["PROOF_ESCROW_CONTRACT_ID"]),
@@ -81,12 +75,12 @@ export function createSellerReadiness(env: NodeJS.ProcessEnv = process.env): Sel
   ];
 
   return {
-    status: upstreamMissing.length === 0 && payment.ready && escrowMissing.length === 0 ? "ready" : "blocked",
+    status: payment.ready && escrowMissing.length === 0 ? "ready" : "blocked",
     upstream: {
-      ready: upstreamMissing.length === 0,
-      provider,
-      baseUrl: hasLiteLlm ? env.LITELLM_BASE_URL : (hasOpenAi ? "https://api.openai.com/v1" : undefined),
-      missing: upstreamMissing
+      ready: true,
+      provider: "mock",
+      baseUrl: "local-mock",
+      missing: []
     },
     payment: {
       ready: payment.ready,
@@ -130,22 +124,6 @@ export function buildX402Challenge(env: NodeJS.ProcessEnv = process.env): X402Ch
       "x-0waist-proof-escrow"
     ],
     error: "Payment required. Retry with an x402 payment proof or a funded 0-wAIst escrow order header."
-  };
-}
-
-function upstreamConfig(env: NodeJS.ProcessEnv) {
-  if (env.LITELLM_BASE_URL) {
-    return {
-      baseUrl: env.LITELLM_BASE_URL.replace(/\/+$/, ""),
-      apiKey: env.LITELLM_API_KEY,
-      model: env.SELLER_MODEL ?? env.OPENAI_MODEL ?? "gpt-4.1-mini"
-    };
-  }
-
-  return {
-    baseUrl: "https://api.openai.com/v1",
-    apiKey: env.OPENAI_API_KEY,
-    model: env.SELLER_MODEL ?? env.OPENAI_MODEL ?? "gpt-4.1-mini"
   };
 }
 
@@ -232,51 +210,56 @@ export function parseEscrowEvidence(
   };
 }
 
-async function forwardChatCompletion(input: {
+function mockFingerprint(body: unknown): string {
+  return createHash("sha256")
+    .update(`0waist.seller.mock:${JSON.stringify(body)}`)
+    .digest("hex")
+    .slice(0, 12);
+}
+
+async function createMockChatCompletion(input: {
   env: NodeJS.ProcessEnv;
   body: unknown;
-  fetchImpl: typeof fetch;
 }) {
   const parsed = ChatCompletionRequestSchema.parse(input.body);
-  const upstream = upstreamConfig(input.env);
-  if (!upstream.apiKey) {
-    return {
-      status: 503,
-      body: {
-        error: {
-          code: "SELLER_UPSTREAM_BLOCKED",
-          message: "Seller upstream LLM credentials are missing.",
-          missing: input.env.LITELLM_BASE_URL ? ["LITELLM_API_KEY"] : ["OPENAI_API_KEY"]
-        }
-      }
-    };
-  }
-
-  const response = await input.fetchImpl(`${upstream.baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "authorization": `Bearer ${upstream.apiKey}`,
-      "content-type": "application/json"
-    },
-    body: JSON.stringify({
-      ...parsed,
-      model: parsed.model ?? upstream.model,
-      stream: false
-    })
-  });
-  const responseBody = await response.json();
+  const model = parsed.model ?? input.env.SELLER_MODEL ?? input.env.MOCK_LLM_MODEL ?? "mock-llm-v1";
+  const fingerprint = mockFingerprint(parsed.messages);
+  const promptTokens = JSON.stringify(parsed.messages).length;
+  const completion = [
+    "Mock seller-node completion generated locally.",
+    "No OpenAI, LiteLLM, or external LLM provider was called.",
+    `Request fingerprint: ${fingerprint}.`
+  ].join(" ");
   return {
-    status: response.status,
-    body: responseBody
+    status: 200,
+    body: {
+      id: `chatcmpl-mock-${fingerprint}`,
+      object: "chat.completion",
+      created: Math.floor(Date.now() / 1000),
+      model,
+      choices: [
+        {
+          index: 0,
+          message: {
+            role: "assistant",
+            content: completion
+          },
+          finish_reason: "stop"
+        }
+      ],
+      usage: {
+        prompt_tokens: promptTokens,
+        completion_tokens: completion.length,
+        total_tokens: promptTokens + completion.length
+      }
+    }
   };
 }
 
 export function createSellerApp(
-  env: NodeJS.ProcessEnv = process.env,
-  deps: { fetchImpl?: typeof fetch } = {}
+  env: NodeJS.ProcessEnv = process.env
 ): Express {
   const app = express();
-  const fetchImpl = deps.fetchImpl ?? fetch;
   app.use(cors());
   app.use(express.json({ limit: "1mb" }));
 
@@ -303,10 +286,9 @@ export function createSellerApp(
         return;
       }
 
-      const upstream = await forwardChatCompletion({
+      const upstream = await createMockChatCompletion({
         env,
-        body: request.body,
-        fetchImpl
+        body: request.body
       });
       response.status(upstream.status).json(upstream.body);
     } catch (error) {

@@ -35,7 +35,7 @@ describe("ProofRouter MCP stdio server", () => {
         arguments: {}
       });
       const firstText = result.content.find((item) => item.type === "text");
-      expect(firstText?.text).toContain("offer-alpha-gpt41mini");
+      expect(firstText?.text).toContain("offer-alpha-mockllm");
     } finally {
       await client.close();
     }

@@ -64,7 +64,7 @@ This is a `pnpm` workspace monorepo (`pnpm-workspace.yaml`) with four main areas
   - what changed,
   - which package/service was touched,
   - commands run (example: `pnpm build`, `pnpm test`, `pnpm dev` smoke path),
-  - any environment assumptions (`.env` values, Hedera/OpenAI dependency).
+  - any environment assumptions (`.env` values, Hedera/mock LLM mode).
 - Align on ownership boundaries:
   - `packages/*` contain reusable primitives/schemas; services/apps own route and app-policy behavior.
   - If a shared interface must change (`packages/schemas` usage), coordinate before merging.

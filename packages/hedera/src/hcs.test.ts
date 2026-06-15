@@ -10,7 +10,7 @@ describe("HCS audit messages", () => {
       requestHash: "b".repeat(64),
       responseHash: "c".repeat(64),
       sellerId: "alpha",
-      modelId: "gpt-4.1-mini",
+      modelId: "mock-llm-v1",
       createdAt: "2026-06-13T20:00:00.000Z",
       schemaVersion: "0waist.audit.v1"
     });
@@ -28,7 +28,7 @@ describe("HCS audit messages", () => {
       requestHash: "b".repeat(64),
       responseHash: "c".repeat(64),
       sellerId: "alpha",
-      modelId: "gpt-4.1-mini",
+      modelId: "mock-llm-v1",
       creWorkflowId: "workflow-1",
       creDonId: "don-1",
       creReportHash: "d".repeat(64),

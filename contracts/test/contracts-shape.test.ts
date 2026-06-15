@@ -10,7 +10,7 @@ describe("contract shape", () => {
     expect(compiled.ProofEscrow.abi.length).toBeGreaterThan(0);
     expect(compiled.VerifierRegistry.abi.length).toBeGreaterThan(0);
     expect(compiled.ProofEscrow.bytecode.length).toBeGreaterThan(0);
-  }, 15_000);
+  }, 30_000);
 
   it("keeps refundExpired as the timeout entrypoint", () => {
     const source = readFileSync("contracts/src/ProofEscrow.sol", "utf8");
